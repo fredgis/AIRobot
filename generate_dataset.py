@@ -15,35 +15,35 @@ def choose():
 
 def fonction_pos_tp(x):
     #plus 10 pour temperature_percage
-    return x + 0.001737 + uniform(-2,2)
+    return x*0.001737 + uniform(-2,2)
 
 def fonction_neg_tp(x):
     #moins 10 pour temperature_percage
-    return x - 0.001737 + uniform(-2,2)
+    return x*(-1*0.001737) + uniform(-2,2)
 
 def fonction_pos_ff(x):
     #plus 0.4 pour temperature_percage
-    return x + 0.00007 + uniform(-0.1,0.1)
+    return x*0.00007 + uniform(-0.1,0.1)
 
 def fonction_neg_ff(x):
     #moins 0,4 pour temperature_percage
-    return x - 0.00007 + uniform(-0.1,0.1)
+    return x*(-0.00007) + uniform(-0.1,0.1)
 
 def fonction_pos_vp(x):
     #plus 1500 pour temperature_percage
-    return x + 0.2605 + uniform(-50,50)
+    return x*0.2605 + uniform(-50,50)
 
 def fonction_neg_vp(x):
     #moins 1000 pour temperature_percage
-    return x - 0.1736 + uniform(-50,50)
+    return x*(-1*0.1736) + uniform(-50,50)
 
 def fonction_pos_ter(x):
     #plus 5 pour temperature_percage
-    return x + 0.000868 + uniform(-1,1)
+    return x*(0.000868) + uniform(-1,1)
 
 def fonction_neg_ter(x):
     #moins 5 pour temperature_percage
-    return x - 0.000868 + uniform(-1,1)
+    return x*(-1*0.000868) + uniform(-1,1)
 
 def generate_dataset(lg_ds):  
    
@@ -74,28 +74,28 @@ def generate_dataset(lg_ds):
 
                 if ((0 in b) and (c1 == 0)):
                     Temp_perc.append(fonction_pos_tp(j))
-                elif ((0 in b) and (c1 == 0)):
+                elif ((0 in b) and (c1 == 1)):
                     Temp_perc.append(fonction_neg_tp(j))
                 else :
                     Temp_perc.append(temperature_percage + uniform(-2,2))
                 
-                if ((0 in b) and (c2 == 0)):
+                if ((1 in b) and (c2 == 0)):
                     Frot_foret.append(fonction_pos_ff(j))
-                elif ((0 in b) and (c2 == 0)):
+                elif ((1 in b) and (c2 == 1)):
                     Frot_foret.append(fonction_neg_ff(j))
                 else :
                     Frot_foret.append(frottement_foret + uniform(-0.1,0.1))
                     
-                if ((0 in b) and (c3 == 0)):
+                if ((2 in b) and (c3 == 0)):
                     Vitesse_perc.append(fonction_pos_vp(j))
-                elif ((0 in b) and (c3 == 0)):
+                elif ((2 in b) and (c3 == 1)):
                     Vitesse_perc.append(fonction_neg_vp(j))
                 else :
                     Vitesse_perc.append(vitesse_percage + uniform(-50,50))
                     
-                if ((0 in b) and (c4 == 0)):
+                if ((3 in b) and (c4 == 0)):
                     Temp_refr.append(fonction_pos_ter(j))
-                elif ((0 in b) and (c4 == 0)):
+                elif ((3 in b) and (c4 == 1)):
                     Temp_refr.append(fonction_neg_ter(j))
                 else :
                     Temp_refr.append(temperature_eau_refroidissement + uniform(-1,1))
