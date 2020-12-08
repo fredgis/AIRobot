@@ -5,4 +5,4 @@ AIRobot ! From robots to maintenance service
 ![](/Architecture/iRobotArchitecture.png?raw=true)
 
 # Deep architecture design
-![]('/Architecture/iRobotArchitecture-DEEP ARCHITECTURE$.png?raw=true')
+![](/Architecture/iRobotArchitecture-DEEP%20ARCHITECTURE$.png?raw=true)
