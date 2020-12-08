@@ -1,5 +1,5 @@
-# iRobot
-iRobot ! From robots to maintenance service
+# AIRobot
+AIRobot ! From robots to maintenance service
 
 # Architecture
 ![](/Architecture/iRobotArchitecture.png?raw=true)
