@@ -28,6 +28,7 @@ AIRobot ! From robots to maintenance service
 https://docs.microsoft.com/en-us/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2018-06
 
 3.6 Déploiement du modèle ONNX dans SQLEdge
+https://docs.microsoft.com/fr-fr/azure/azure-sql-edge/deploy-onnx
 
 3.7 Ordonnancement des prédictions via Azure Function
 
