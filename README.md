@@ -44,6 +44,8 @@ https://docs.microsoft.com/en-us/azure/iot-edge/iot-edge-as-gateway?view=iotedge
 # Architecture "Cloud"
 4. Deep dive technique cloud
 
+4.0 :) Création et entrainement du modèle ML de prédiction des pannes
+
 4.1 Création du compute Azure Function pour router la transaction (transaction builder)
 
 4.2 Création de l'environnement Blockchain (POA) pour validation des transactions (Quorum)
