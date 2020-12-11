@@ -5,8 +5,11 @@
         "TemplatesLocation": {
             "value": "https://raw.githubusercontent.com/fredgis/AIRobot/main/ARM%20Templates"
         },
-        "TemplatesLocationAccessToken": {
-            "value": "APXEJQYCGFAQWA722WHYCIS73SBYQ"
+        "NetworkTemplateLocationAccessToken": {
+            "value": "APXEJQ7YOOU2UYHFLSN25FK73SUR4"
+        },
+        "EdgeTemplateLocationAccessToken": {
+            "value": "APXEJQ2GT7BCLPCZNMEALCS73SUJQ"
         },
         "VirtualMachinAdminUsername": {
             "value": "crobin"

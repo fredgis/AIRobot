@@ -5,7 +5,10 @@
         "TemplatesLocation": {
             "type": "string"
         },
-        "TemplatesLocationAccessToken": {
+        "NetworkTemplateLocationAccessToken": {
+            "type": "securestring"
+        },
+        "EdgeTemplateLocationAccessToken": {
             "type": "securestring"
         },
         "VirtualMachinAdminUsername": {
@@ -25,7 +28,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(parameters('TemplatesLocation'), '/deployment-network.json', '?token=', parameters('TemplatesLocationAccessToken'))]",
+                    "uri": "[concat(parameters('TemplatesLocation'), '/deployment-network.json', '?token=', parameters('NetworkTemplateLocationAccessToken'))]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -42,7 +45,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(parameters('TemplatesLocation'), '/deployment-edge.json', '?token=', parameters('TemplatesLocationAccessToken'))]",
+                    "uri": "[concat(parameters('TemplatesLocation'), '/deployment-edge.json', '?token=', parameters('EdgeTemplateLocationAccessToken'))]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
