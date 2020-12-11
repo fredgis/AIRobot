@@ -69,6 +69,9 @@
             "apiVersion": "2020-05-01",
             "name": "[parameters('PrivateNetworkVnetName')]",
             "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('PrivateNetworkNsgName'))]"
+            ],
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
@@ -107,6 +110,9 @@
             "apiVersion": "2020-05-01",
             "name": "[parameters('EdgeNetworkVnetName')]",
             "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('EdgeNetworkNsgName'))]"
+            ],
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
@@ -307,5 +313,13 @@
         }
     ],
     "outputs": {
+        "EdgeSubnetId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('EdgeNetworkVnetName'), 'Gateway')]"
+        },
+        "PrivateSubnetId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('PrivateNetworkVnetName'), 'Robots')]"
+        }
     }
 }

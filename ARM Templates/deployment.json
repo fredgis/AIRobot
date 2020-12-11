@@ -1,0 +1,63 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "TemplatesLocation": {
+            "type": "string"
+        },
+        "TemplatesLocationAccessToken": {
+            "type": "securestring"
+        },
+        "VirtualMachinAdminUsername": {
+            "type": "string"
+        },
+        "VirtualMachineAdminPassword": {
+            "type": "securestring"
+        }
+    },
+    "functions": [],
+    "variables": {},
+    "resources": [
+        {
+            "name": "Network",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('TemplatesLocation'), '/deployment-network.json', '?token=', parameters('TemplatesLocationAccessToken'))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                }
+            }
+        },
+        {
+            "name": "Edge",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "dependsOn": [
+                "Network"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('TemplatesLocation'), '/deployment-edge.json', '?token=', parameters('TemplatesLocationAccessToken'))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "SubnetId": {
+                        "value": "[reference('Network').outputs.EdgeSubnetId.value]"
+                    },
+                    "AdminUsername": {
+                        "value": "[parameters('VirtualMachinAdminUsername')]"
+                    },
+                    "AdminPassword": {
+                        "value": "[parameters('VirtualMachineAdminPassword')]"
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}
