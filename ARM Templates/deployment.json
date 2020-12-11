@@ -11,6 +11,12 @@
         "EdgeTemplateLocationAccessToken": {
             "type": "securestring"
         },
+        "RobotTemplateLocationAccessToken": {
+            "type": "securestring"
+        },
+        "CloudResourcesTemplateLocationAccessToken": {
+            "type": "securestring"
+        },
         "VirtualMachinAdminUsername": {
             "type": "string"
         },
@@ -58,6 +64,47 @@
                     "AdminPassword": {
                         "value": "[parameters('VirtualMachineAdminPassword')]"
                     }
+                }
+            }
+        },
+        {
+            "name": "Robot",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "dependsOn": [
+                "Network"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('TemplatesLocation'), '/deployment-robot.json', '?token=', parameters('RobotTemplateLocationAccessToken'))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "SubnetId": {
+                        "value": "[reference('Network').outputs.PrivateSubnetId.value]"
+                    },
+                    "AdminUsername": {
+                        "value": "[parameters('VirtualMachinAdminUsername')]"
+                    },
+                    "AdminPassword": {
+                        "value": "[parameters('VirtualMachineAdminPassword')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "CloudResources",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('TemplatesLocation'), '/deployment-resources.json', '?token=', parameters('CloudResourcesTemplateLocationAccessToken'))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    
                 }
             }
         }

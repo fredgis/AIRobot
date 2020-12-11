@@ -4,7 +4,7 @@
     "parameters": {
         "StorageAccountName": {
             "type": "string",
-            "defaultValue": "saairobot"
+            "defaultValue": "[concat('saairobot', uniqueString(newGuid()))]"
         },
         "IotHubName": {
             "type": "string",

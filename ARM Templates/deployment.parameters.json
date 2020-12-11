@@ -9,7 +9,13 @@
             "value": "APXEJQ7YOOU2UYHFLSN25FK73SUR4"
         },
         "EdgeTemplateLocationAccessToken": {
-            "value": "APXEJQ2GT7BCLPCZNMEALCS73SUJQ"
+            "value": "APXEJQYECCUKDSXC3G3UUNS73SU7Y"
+        },
+        "RobotTemplateLocationAccessToken": {
+            "value": "APXEJQ4JFTJF3AJUT76JVVK73SXUQ"
+        },
+        "CloudResourcesTemplateLocationAccessToken": {
+            "value": ""
         },
         "VirtualMachinAdminUsername": {
             "value": "crobin"
