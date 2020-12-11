@@ -1,0 +1,27 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "TemplatesLocation": {
+            "value": "https://raw.githubusercontent.com/fredgis/AIRobot/main/ARM%20Templates"
+        },
+        "NetworkTemplateLocationAccessToken": {
+            "value": ""
+        },
+        "EdgeTemplateLocationAccessToken": {
+            "value": ""
+        },
+        "RobotTemplateLocationAccessToken": {
+            "value": ""
+        },
+        "CloudResourcesTemplateLocationAccessToken": {
+            "value": ""
+        },
+        "VirtualMachinAdminUsername": {
+            "value": "airobotadmin"
+        },
+        "VirtualMachineAdminPassword": {
+            "value": "P@ssw0rd123!"
+        }
+    }
+}
