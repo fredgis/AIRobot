@@ -1,0 +1,15 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "SubnetId": {
+            "value": "/subscriptions/f4ee92e9-c0e0-4b20-925a-da0ded724a5c/resourceGroups/MPN-AIROBOT/providers/Microsoft.Network/virtualNetworks/vnet-airobot-edge/subnets/Gateway"
+        },
+        "AdminUsername": {
+            "value": "crobin"
+        },
+        "AdminPassword": {
+            "value": "P@ssw0rd123!"
+        }
+    }
+}
