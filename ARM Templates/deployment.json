@@ -6,16 +6,20 @@
             "type": "string"
         },
         "NetworkTemplateLocationAccessToken": {
-            "type": "securestring"
+            "type": "securestring",
+            "defaultValue": ""
         },
         "EdgeTemplateLocationAccessToken": {
-            "type": "securestring"
+            "type": "securestring",
+            "defaultValue": ""
         },
         "RobotTemplateLocationAccessToken": {
-            "type": "securestring"
+            "type": "securestring",
+            "defaultValue": ""
         },
         "CloudResourcesTemplateLocationAccessToken": {
-            "type": "securestring"
+            "type": "securestring",
+            "defaultValue": ""
         },
         "VirtualMachinAdminUsername": {
             "type": "string"
@@ -25,7 +29,12 @@
         }
     },
     "functions": [],
-    "variables": {},
+    "variables": {
+        "NetworkTemplatePath": "[concat(parameters('TemplatesLocation'), '/deployment-network.json', if(empty(parameters('NetworkTemplateLocationAccessToken')), '', concat('?token=', parameters('NetworkTemplateLocationAccessToken'))))]",
+        "EdgeTemplatePath": "[concat(parameters('TemplatesLocation'), '/deployment-edge.json', if(empty(parameters('EdgeTemplateLocationAccessToken')), '', concat('?token=', parameters('EdgeTemplateLocationAccessToken'))))]",
+        "RobotTemplatePath": "[concat(parameters('TemplatesLocation'), '/deployment-robot.json', if(empty(parameters('RobotTemplateLocationAccessToken')), '', concat('?token=', parameters('RobotTemplateLocationAccessToken'))))]",
+        "CloudResourcesTemplatePath": "[concat(parameters('TemplatesLocation'), '/deployment-resources.json', if(empty(parameters('CloudResourcesTemplateLocationAccessToken')), '', concat('?token=', parameters('CloudResourcesTemplateLocationAccessToken'))))]"
+    },
     "resources": [
         {
             "name": "Network",
@@ -34,7 +43,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(parameters('TemplatesLocation'), '/deployment-network.json', '?token=', parameters('NetworkTemplateLocationAccessToken'))]",
+                    "uri": "[variables('NetworkTemplatePath')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -51,7 +60,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(parameters('TemplatesLocation'), '/deployment-edge.json', '?token=', parameters('EdgeTemplateLocationAccessToken'))]",
+                    "uri": "[variables('EdgeTemplatePath')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -77,7 +86,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(parameters('TemplatesLocation'), '/deployment-robot.json', '?token=', parameters('RobotTemplateLocationAccessToken'))]",
+                    "uri": "[variables('RobotTemplatePath')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
@@ -100,11 +109,10 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat(parameters('TemplatesLocation'), '/deployment-resources.json', '?token=', parameters('CloudResourcesTemplateLocationAccessToken'))]",
+                    "uri": "[variables('CloudResourcesTemplatePath')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
-                    
                 }
             }
         }
