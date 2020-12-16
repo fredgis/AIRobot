@@ -4,11 +4,11 @@ AIRobot ! From robots to maintenance service
 1. Blabla sur contexte
 2. Approche globale d'architecture
 # Architecture overview
-![](/Architecture/iRobotArchitecture.png?raw=true)
+![](/Pictures/iRobotArchitecture.png?raw=true)
 
 3. Deep dive technique @edge
 # Deep architecture design
-![](/Architecture/iRobotArchitecture-DEEP%20ARCHITECTURE$.png?raw=true)
+![](/Pictures/iRobotArchitecture-DEEP%20ARCHITECTURE$.png?raw=true)
 
 # Architecture "At the Edge"
 ## 3.1 Réseau
