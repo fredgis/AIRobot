@@ -91,7 +91,7 @@ Créer un déploiement utilisant le modèle ARM `deployment.json` et son fichier
 az deployment group create -n "AIRobotDeployment" --resource-group <RG_NAME> --template-file deployment.json --parameters deployment.parameters.json
 ```
 
-Une fois le déploiement terminé, vous devriez optenir le résultat suivant:
+Une fois le déploiement terminé, vous devriez obtenir le résultat suivant:
 ![](/Pictures/DeploymentResults.jpg?raw=true)
 
 ## Déploiement du simulateur des mesures du robot
@@ -146,7 +146,7 @@ az storage account show-connection-string -n <STORAGE_ACCOUNT_NAME>
 La commande vous retournera un résultat de la forme:
 ```JSON
 {
-  "connectionString": "<CHAÎNE DE CONNEXION"
+  "connectionString": "<CHAÎNE DE CONNEXION>"
 }
 ```
 
@@ -154,7 +154,7 @@ Noter la chaîne de connection.
 
 ##### Création de la configuration
 La configuration de la gateway via Azure IoT Hub est définie par un fichier JSON de configuration.
-Le fichier `EdgeConfiguration.json` dans ce repo GitHub reprend la configuration nécessaire. Néanmoins, il doit être modifié avec les paramètres correspondant à votre déploiement:
+Le fichier [EdgeConfiguration.json](/EdgeConfiguration.json) dans ce repo GitHub reprend la configuration nécessaire. Néanmoins, il doit être modifié avec les paramètres correspondant à votre déploiement:
 
 | Paramètre | Description |
 | --- | --- |
@@ -165,14 +165,14 @@ Le fichier `EdgeConfiguration.json` dans ce repo GitHub reprend la configuration
 
 > **Notes:** <SQL_PASSWORD>, <SA_EDGE_NAME> et <SA_EDGE_KEY> sont des valeurs à générer par vos soins.
 
-Une fois le fichier de configuration mis à jour à vos paramètres, exécuter la commande suivante pour déployer la configuration dans IoT Hub.
+Une fois le fichier de configuration mis à jour avec vos paramètres, exécuter la commande suivante pour déployer la configuration dans IoT Hub.
 
 ```Shell
 az iot edge set-modules --device-id AIRobotEdge --hub-name <IOT_HUB_NAME> --content EdgeConfiguration.json
 ```
 
 #### Installer le runtime Azure IoT Edge sur la gateway
-Le runtime Azure IoT Edge doit être déployée sur la gateway. Dans notre exemple, nous devons nous connecter à la VM `Edge` qui représente notre gateway Azure IoT Edge.
+Le runtime Azure IoT Edge doit être déployé sur la gateway. Dans notre exemple, nous devons nous connecter à la VM `Edge` qui représente notre gateway Azure IoT Edge.
 
 Une fois connectée à la VM via le service `Bastion` ou une connexion SSH, exécuter les commandes suivantes.
 
@@ -204,7 +204,8 @@ sudo apt-get install iotedge
 ```
 
 Configuration de la connexion à IoT Hub:
-La chaîne de connexion récupérée précédemment doit être renseignée dans le fichier de configuration du runtime IoT Edge `config.yaml`.
+
+La chaîne de connexion à IoT Hub récupérée précédemment doit être renseignée dans le fichier de configuration du runtime IoT Edge `config.yaml`.
 ```Shell
 sudo nano /etc/iotedge/config.yaml
 ```
@@ -230,7 +231,9 @@ Dans la section `IoT Edge`, cliquer sur le device `AIRobotEdge`, et vérifier po
 
 #### Procédures complètes pour référence:
 - [Installation runtime IoT Edge](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge?view=iotedge-2018-06&tabs=linux);
-- [Configuration IoT Edge avec clé symétrique](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-manual-provision-symmetric-key?view=iotedge-2018-06&tabs=azure-portal%2Clinux).
+- [Configuration IoT Edge avec clé symétrique](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-manual-provision-symmetric-key?view=iotedge-2018-06&tabs=azure-portal%2Clinux);
+- [Déploiement de Azure SQL Edge](https://docs.microsoft.com/en-us/azure/azure-sql-edge/deploy-portal);
+- [Déploiement de Azure Blob Storage on IoT Edge](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-deploy-blob?view=iotedge-2018-06).
 
 ### Azure IoT Edge as Transparent Gateway
 
