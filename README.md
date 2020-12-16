@@ -16,6 +16,7 @@ AIRobot ! From robots to maintenance service
 ## Définition
 
 ### Réseau
+#### Virtual networks, peering et network security groups
 Les robots équipés de leur capteurs ainsi que la gateway Azure IoT Edge sont situés dans le réseau privé de l'entreprise.
 Pour simuler ce scénario, nous utilisons deux virtual networks dans Azure:
 * un virtual network contenant l'ensemble des robots, simulés dans notre cas par une VM;
@@ -26,6 +27,14 @@ Il est rare qu'un réseau local contenant des équipements critiques, tels que d
 Enfin, ces deux réseaux sont liés par un network peering afin que les robots puissent envoyer leurs données vers la gateway Azure IoT Edge. Seul le réseau de la garteway est autorisé à sortir sur Internet.
 
 ![](/Pictures/AIRobot%20Network.png?raw=true)
+
+#### DNS private zone
+Les robots doivent pouvoir contacter la gateway Azure IoT Edge, soit directement par son adresse IP ou par une entrée DNS dans le réseau de l'entreprise.
+Dans notre exemple, nous utilisons une zone Azure DNS privée pour router les requêtes faites à edge.corporate.lan vers la VM Azure IoT Edge.
+
+#### Bastion
+Le service Azure Bastion est déployé dans le réseau privé "simulé". L'utilisation de ce service est optionel et ne nous sert uniquement qu'à prendre rapidement la main sur nos VMs Azure de manière plus sécurisée.
+Une connexion SSH directe reste possible (configurationb réseau nécessaire), et sera sans doute utilisée dans le cas d'un déploiement réel dans l'entreprise.
 
 ### Robots
 Les robots de notre chaîne de production sont équipés de capteurs qui relèvent à intervalle régulier différentes mesures que l'on souhaite surveiller et historiser. Ces données sont envoyées directement à la gateway Azure IoT Edge.
@@ -42,6 +51,48 @@ Dans notre exemple, notre gateway est une marchine virtuelle Linux (Ubuntu) sur 
 * Azure Functions (sous forme de module privé).
 
 ## Déploiement des ressources "at the edge" dans Azure
+Toute la partie réseau privé d'entreprise et ses machines, que l'on appelle ici "at the edge", est simulée dans Azure par souci de confort et d'efficacité.
+
+Les modèles ARM suivants sont utilisables pour la déployer:
+* `deployment.json`: Modèle général déployant toute la partie "at the edge" en faisant appel aux modèles liés ci-dessous;
+* `deployment-network.json`: modèle contenant toutes les ressources réseau;
+* `deployment-edge.json`: modèle correspondant à la VM Azure IoT Edge;
+* `deployment-robot.json`: modèle de la VM simulant un robot;
+* `deployment-resources.json`: modèle comprenant les ressources PaaS Azure requises au déploiement d'Azure IoT Edge (comme IoT Hub) et autres ressources en liant avec le déploiement "at the edge", comme le Storage Account de synchronisation des données.
+
+Par simplicité, seul le modèle `deployment.json` peut être utilisé en lui fournissant les paramètres requis suivants ou en modifiant directement le fichier `deployment.parameters.json`.
+
+| Paramètre | Description |
+| --- | --- |
+| TemplatesLocation | Adresse des modèles et modèles liés (ce repo) |
+| NetworkTemplateLocationAccessToken | Token d'accès au repo Git (laisser vide si public) |
+| EdgeTemplateLocationAccessToken | Idem |
+| RobotTemplateLocationAccessToken | Idem |
+| CloudResourcesTemplateLocationAccessToken | Idem |
+| VirtualMachinAdminUsername | Nom du compte admin des VMs |
+| VirtualMachineAdminPassword | Mot de passe du compte admin des VMs |
+
+Tous les modèles sont disponibles dans le répertoire [ARM Templates](/ARM%20Templates) de ce repo.
+
+### Déploiement (via Azure CLI)
+
+Se loguer à Azure
+```Shell
+az login
+```
+
+Création d'un resource group de votre choix
+```Shell
+az group create -l <LOCATION> -n <RG_NAME>
+```
+
+Créer un déploiement utilisant le modèle ARM `deployment.json` et son fichier de paramètres.
+```Shell
+az deployment group create -n "AIRobotDeployment" --resource-group <RG_NAME> --template-file deployment.json --parameters deployment.parameters.json
+```
+
+Une fois le déploiement terminé, vous devriez optenir le résultat suivant:
+
 
 ## Déploiement du simulateur des mesures du robot
 
