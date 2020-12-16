@@ -12,6 +12,16 @@ AIRobot ! From robots to maintenance service
 
 # Architecture "At the Edge"
 ## 3.1 Réseau
+Les robots équipés de leur capteurs ainsi que la gateway Azure IoT Edge sont situés dans le réseau privé de l'entreprise.
+Pour simuler ce scénario, nous utilisons deux virtual networks dans Azure:
+- un virtual network contenant l'ensemble des robots, simulés dans notre cas par une VM;
+- un second virtual network contenant la gateway Azure IoT Edge.
+
+Il est rare qu'un réseau local contenant des équipements critiques, tels que des robots d'une chaîne de montage ou production, soit ouvert sur Internet. Nous appliquons donc cette restriction au sous-réseau contenant notre VM "Robot" en interdisant tout trafic vers Internet.
+
+Enfin, ces deux réseaux sont liés par un network peering afin que les robots puissent envoyer leurs données vers la gateway Azure IoT Edge. Seul le réseau de la garteway est autorisé à sortir sur Internet.
+
+![](/Pictures/AIRobot Network.png?raw=true)
 
 ## 3.2 Simulateur des données AIRobot
 
