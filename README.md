@@ -34,7 +34,7 @@ Dans notre exemple, nous utilisons une zone Azure DNS privée pour router les re
 
 #### Bastion
 Le service Azure Bastion est déployé dans le réseau privé "simulé". L'utilisation de ce service est optionel et ne nous sert uniquement qu'à prendre rapidement la main sur nos VMs Azure de manière plus sécurisée.
-Une connexion SSH directe reste possible (configurationb réseau nécessaire), et sera sans doute utilisée dans le cas d'un déploiement réel dans l'entreprise.
+Une connexion SSH directe reste possible (configuration réseau nécessaire), et sera sans doute utilisée dans le cas d'un déploiement réel dans l'entreprise.
 
 ### Robots
 Les robots de notre chaîne de production sont équipés de capteurs qui relèvent à intervalle régulier différentes mesures que l'on souhaite surveiller et historiser. Ces données sont envoyées directement à la gateway Azure IoT Edge.
@@ -65,7 +65,7 @@ Par simplicité, seul le modèle `deployment.json` peut être utilisé en lui fo
 | Paramètre | Description |
 | --- | --- |
 | TemplatesLocation | Adresse des modèles et modèles liés (ce repo) |
-| NetworkTemplateLocationAccessToken | Token d'accès au repo Git (laisser vide si public) |
+| NetworkTemplateLocationAccessToken | Token d'accès au repo GitHub (laisser vide si public) |
 | EdgeTemplateLocationAccessToken | Idem |
 | RobotTemplateLocationAccessToken | Idem |
 | CloudResourcesTemplateLocationAccessToken | Idem |
@@ -92,7 +92,7 @@ az deployment group create -n "AIRobotDeployment" --resource-group <RG_NAME> --t
 ```
 
 Une fois le déploiement terminé, vous devriez optenir le résultat suivant:
-
+![](/Pictures/DeploymentResults.jpg?raw=true)
 
 ## Déploiement du simulateur des mesures du robot
 
