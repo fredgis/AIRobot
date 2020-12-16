@@ -97,11 +97,140 @@ Une fois le déploiement terminé, vous devriez optenir le résultat suivant:
 ## Déploiement du simulateur des mesures du robot
 
 ## Configuration de la gateway Azure IoT Edge
-- HubAgent
-- Hub
-- SQLEdge
-- StorageEdge
-- Custom module avec Azure Function
+La gateway Azure Iot Edge est une machine (physique ou virtuelle) sur laquelle nous déployons les modules suivants:
+- Le runtime Azure IoT Edge;
+- Les services IoT Edge Hub & Agent;
+- SQL Edge;
+- Azure Blob Storage Edge;
+- Module personnalisé avec le runtime Azure Function.
+
+### Déploiement du runtime Azure IoT Edge
+Pour déployer le runtime Azure IoT Edge, nous devons d'abord déclarer notre gateway dans le service Azure IoT Hub, puis récupérer sa chaîne de connexion. Le runtime IoT Edge se connectera alors au service pour récupérer la configuration nécessaire de la gateway.
+
+#### Déclaration de la gateway dans IoT Hub
+
+La gateway doit être déclarée dans IoT Hub, via la commande suivante:
+```Shell
+az iot hub device-identity create --device-id AIRobotEdge --edge-enabled --hub-name <HUB_NAME>
+```
+
+> **Notes:** Vous serez amener à installer l'extension `azure-iot` à l'exécution de cette commande, si elle n'est pas déjà présente sur votre machine.
+
+Récupération de la chaîne de connexion au service IoT Hub:
+```Shell
+az iot hub device-identity connection-string show --device-id AIRobotEdge --hub-name <HUB_NAME>
+```
+
+La commande vous retournera un résultat de la forme:
+```JSON
+{
+  "connectionString": "HostName=<HUB_NAME>.azure-devices.net;DeviceId=AIRobotEdge;SharedAccessKey=xxx"
+}
+```
+
+Noter la chaîne de connexion.
+
+#### Création de la configuration pour la gateway dans IoT Hub
+Nous allons définir ici la configuration de la gateway dans le service IoT Hub. C'est cette configuration que récupèrera le runtime Azure IoT Edge déployé sur la gateway, et à partir de laquelle le runtime exécutera les actions nécessaires.
+
+La configuration consiste en:
+- l'utilisation des deux modules systèmes obligatoire Hub & Agent, dans leur configuration par défaut;
+- l'installation de SQL Edge (plan Premium) avec le compte `sa` et mot de passe `P@ssw0rd123!`, port 1433;
+- l'installation de Blob Storage on IoT Edge.
+
+##### Récupération de la chaîne de connexion vers le Storage Account dans Azure
+Le service Blob Storage on IoT Edge réplique ses données dans le Storage Account créé dans Azure. Pour cela, nous devons récupérer la chaîne de connexion à ce service déployé précédemment.
+```Shell
+az storage account show-connection-string -n <STORAGE_ACCOUNT_NAME>
+```
+La commande vous retournera un résultat de la forme:
+```JSON
+{
+  "connectionString": "<CHAÎNE DE CONNEXION"
+}
+```
+
+Noter la chaîne de connection.
+
+##### Création de la configuration
+La configuration de la gateway via Azure IoT Hub est définie par un fichier JSON de configuration.
+Le fichier `EdgeConfiguration.json` dans ce repo GitHub reprend la configuration nécessaire. Néanmoins, il doit être modifié avec les paramètres correspondant à votre déploiement:
+
+| Paramètre | Description |
+| --- | --- |
+| <SQL_PASSWORD> | Mot de passe du compte `sa` de l'instance SQL Edge |
+| <SA_EDGE_NAME> | Nom du compte Blob Storage on IoT Edge dans la gateway |
+| <SA_EDGE_KEY> | Clé d'accès au Blob Storage on IoT Edge dans la gateway (base 64 string) |
+| <STORAGE_ACCOUNT_CONNECTION_STRING> | Chaîne de connection au Storage Account dans Azure, récupéré ci-dessus. |
+
+> **Notes:** <SQL_PASSWORD>, <SA_EDGE_NAME> et <SA_EDGE_KEY> sont des valeurs à générer par vos soins.
+
+Une fois le fichier de configuration mis à jour à vos paramètres, exécuter la commande suivante pour déployer la configuration dans IoT Hub.
+
+```Shell
+az iot edge set-modules --device-id AIRobotEdge --hub-name <IOT_HUB_NAME> --content EdgeConfiguration.json
+```
+
+#### Installer le runtime Azure IoT Edge sur la gateway
+Le runtime Azure IoT Edge doit être déployée sur la gateway. Dans notre exemple, nous devons nous connecter à la VM `Edge` qui représente notre gateway Azure IoT Edge.
+
+Une fois connectée à la VM via le service `Bastion` ou une connexion SSH, exécuter les commandes suivantes.
+
+Configuration du repository pour notre VM (Ubuntu 18.04):
+```Shell
+curl https://packages.microsoft.com/config/ubuntu/18.04/multiarch/prod.list > ./microsoft-prod.list
+```
+Copie de la liste générée vers la liste des sources:
+```Shell
+sudo cp ./microsoft-prod.list /etc/apt/sources.list.d/
+```
+Installation de la clé GPG de Microsoft:
+```Shell
+curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+sudo cp ./microsoft.gpg /etc/apt/trusted.gpg.d/
+```
+Installation du moteur de container `moby-engine`
+```Shell
+sudo apt-get update
+sudo apt-get install moby-engine
+```
+
+> **Notes:** Moby engine est le moteur de container recommandé pour Azure IoT Edge en production et est compatible avec les images Docker.
+
+Installation du runtime Azure IoT Edge:
+```Shell
+sudo apt-get update
+sudo apt-get install iotedge
+```
+
+Configuration de la connexion à IoT Hub:
+La chaîne de connexion récupérée précédemment doit être renseignée dans le fichier de configuration du runtime IoT Edge `config.yaml`.
+```Shell
+sudo nano /etc/iotedge/config.yaml
+```
+
+```YAML
+# Manual provisioning configuration using a connection string
+provisioning:
+  device_connection_string: "<CHAÎNE DE CONNECTION IOT HUB>"
+  dynamic_reprovisioning: false
+```
+
+Sauvegarder le fichier, puis redémarrer le runtime IoT Edge:
+```Shell
+sudo systemctl restart iotedge
+```
+Vérifier l'état de l'installation:
+```Shell
+systemctl status iotedge
+```
+
+Il est également possible de se rendre dans le portail Azure, puis dans le service Azure IoT Hub.
+Dans la section `IoT Edge`, cliquer sur le device `AIRobotEdge`, et vérifier pour tous les modules que le statut de la colonne `Reported by Device` soit bien `Yes`.
+
+#### Procédures complètes pour référence:
+- [Installation runtime IoT Edge](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge?view=iotedge-2018-06&tabs=linux);
+- [Configuration IoT Edge avec clé symétrique](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-manual-provision-symmetric-key?view=iotedge-2018-06&tabs=azure-portal%2Clinux).
 
 ### Azure IoT Edge as Transparent Gateway
 
