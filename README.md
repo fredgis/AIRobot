@@ -86,6 +86,7 @@ Nous pouvons résumer cette architecture en inq blocs dinstincts:
 5.
 
 
+
 # Architecture "at the edge"
 
 ## Définition
