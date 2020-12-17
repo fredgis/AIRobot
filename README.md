@@ -461,8 +461,6 @@ Exemple de paramétrage.
 - [Gestion du consortium via PowerShell](https://docs.microsoft.com/fr-fr/azure/blockchain/service/manage-consortium-powershell);
 - [Création d'une interface d'appel avec Azure Logic Apps](https://docs.microsoft.com/fr-fr/azure/blockchain/service/ethereum-logic-app).
 
-### Création du compute Azure Function pour router la transaction (transaction builder)
-
 ### Routage de l'informationd e transaction validée sur un event grid (Blockchain Data Manager)
 
 ### Création de la CosmosDB et interaction avec Azure Function et Event Grid
