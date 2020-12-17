@@ -70,7 +70,10 @@ Il est maintenant temps de voir comment doit s'implémenter finement cette appro
 Le schéma ci-après présente l'approche détaillée, chacun des bloc fera l'objet d'un chapitre vous présentant comment l'implémenter.
 
 L'architecture est découpée en plusieurs blocs distincts qui dialoguent entre eux ou via des messages (évènements sur un bus de données), ou via flag (fichier dans un container).
+![](/Pictures/iRobotArchitecture-DEEP%20ARCHITECTURE$.png?raw=true)
+
 Nous pouvons résumer cette architecture en inq blocs dinstincts:
+![](/Pictures/Archi%20bulletsShort?raw=true)
 
 1.
 
@@ -82,9 +85,6 @@ Nous pouvons résumer cette architecture en inq blocs dinstincts:
 
 5.
 
-
-
-![](/Pictures/iRobotArchitecture-DEEP%20ARCHITECTURE$.png?raw=true)
 
 # Architecture "at the edge"
 
