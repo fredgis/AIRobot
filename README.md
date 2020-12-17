@@ -1,17 +1,125 @@
-# AIRobot
-AIRobot ! From robots to maintenance service
+# 1. Architecture introduction
+Imaginez un monde où les robots (dixit robots industriels) effecturais eux-mêmes un diagnostique de leur état de santé et demanderai eux-mêmes une intervention de maintenance.
 
-* Blabla sur contexte
-* Approche globale d'architecture
+Cette approche, utopique il y a quelques années, s'avère bien plus réaliste aujourd'hui grâce aux "nouvelles technologies" et plus précisément services cloud.  En effet, les services "At the Edge", de "Machine Learning", de "Blockchain" et globalement d'infrastructure cloud permettent de s'approcher de telles réalisations.
 
-# Architecture overview
+Nous allons parcourir au gré de cet article les aspects suivants qui permettent la mise en place d'une telle approche:
+- Déploiement d'un ensemble de services du cloud Azure @Edge
+- Intégration d'un modèle de machine learning pour des prises de décisions "intelligentes"
+- Remontée de ces informations dans le cloud
+- Prise de décision déléguée au travers de services de Blockchain
+- Planification automatique d'actes de maintenance de part l'intégration des décisions sur des applications low code (PowerApps)
+
+L'idée globale du projet est donc la remontée de données depuis plusieurs capteurs d'un robot industriel sur une gateway @Edge qui, via un algorithme de machine learning embarqué, prendra la décision de remonter une future défaillance du système.
+
+Nous parlons ici d'une défaillance non prédictible et non liée à une seule remontée de capteur. En effet, beaucoup de robots industriels embarquent désormais leurs propres algorithmes et recueil de données afin d'anticiper une panne sur une pièce et ainsi alerter les opérateurs en amont.
+
+La mise en place d'une telle architecture va permettre de croiser les remontées de différents capteurs afin d'identifier un fonctionnement anormal du robot dans le temps, une dérive et globalement anticiper un disfonctionnement global très en amont de défaillances unitaires. 
+C'est donc une approche globale sur de multiples capteurs non superviser qui visera une prise de décision sur une intervention / commande de matériel.
+
+La remontée des informations se fait @Edge depuis un service Azure IOT Hub déployé @Edge. 
+Les données sont ensuite routées dans une base Azure SQL Edge afin de les stocker. 
+
+Un modèle de machine learning embarqué dans la base Azure SQL Edge (format ONNX) permet, sur une période définie (dans notre étude toutes les heures), d'analyser les envois des différents capteurs afin de détecter ou non un futur disfonctionnement.
+
+Imaginez un robot de découpe qui envoi un certain nombre d'informations
+- Vitesse de rotation
+- Température de fonctionnement extérieur
+- Température de la mèche de perçage ou lame de découpe
+- Bruit émis par la machine en phase de coupe
+- etc.
+
+Tous ces capteurs remontent des informations dans la base Azure SQL Edge qui seront traitées par un modèle de machine learning (préalablement entrainé via un service tel que Azure Machine Learning Services). Si le modèle détecte une future interruption de service alors les données qui lui ont permis de modéliser cet état sont déposées sous la forme d'un fichier dans un Azure Storage déployé @Edge.
+
+A partir du moment où le modèle détecte une dérive un ordre de maintenance doit être créé. 
+Les données déposées dans le stockage @Edge sont alors automatiquement synchronisées sur un Azure Storage dans le cloud afin d'y être traitée.
+
+Cette "décision" en mode autonome du robot d'établir un ordre de maintenance ou ordre de commande doit être validée et pour ne pas briser cette chaîne de décision automatique celle-ci va être déléguée à une architecture blockchain de type POA (Proof of Authority).
+
+Cette architecture construite dans le cloud Azure en utilisant le service Azure Blockchain Services (sur protocole Ethereum/Quorum) ou via Azure AKS (Hyperledger) va donc devoir valider la demande provenant du "field", donc une décision prise en autonomie par le robot (et plus précisément la gateway qui lui est liée).
+
+L'architecture blockchain est de type Quorum (POA) sur un algorithme de consensus qui oblige l'approbation de la transaction par plusieurs acteurs afin que celle-ci soit validée.
+Cette approche est très efficace car ne demande pas beaucoup de ressources afin de valider la transaction.
+
+Dans notre cas le consensus pourrai être:
+- Noeud de consensus de l'usine héberfeant le robot
+- Noeud de consensus du fabricant du robot
+- Noeud de consensus de l'authorité de sécurité du robot
+- etc.
+
+Toutes ces autorités participent à la validation de la transaction d'ordre de maintenance et ont toutes validées un contrat "Smart contract" qui valide un certain nombre de règles lorsqu'une transaction est fournit en entrée de celui-ci.
+
+Les différentes autorités ont un trust sur ce contrat, s'il s'avère exacte et donc que la transaction présentée (sous jacente de la remonté du modèle ML) est validée par chacun des noeuds composant le consensus alors la transaction est validée et écrite dans la blockchain. 
+
+On trace donc non seulement le fait que cette transaction (image numéroque de l'ordre de maitenance) est valide mais on y adjoint l'ensemble du dataset qui a permis de prendre cette décision (pour potentiellement des besoins d'audit par un tiers).
+Cette blockchain déployée est une blockchain privée, sécurisée, reposant sur du POA et donc sans interaction publique.
+
+Dès que cette transaction est validée le service pousse une notification sur un Azure Grid qui permet de broadcaster à plusieurs services l'information.
+
+Dans notre cas nous ferons les actions suivantes:
+- Déclenchement d'une commande dans un ERP d'entreprise (Dynamics 365 !)
+- Ecriture de l'ordre de maintenance dans une base NoSQL (Azure CosmosDB)
+- Mise à disposition et notification de l'acteur de maintenance via une application terrain (PowerApps)
+
+Le schéma d'architecture ci-après présente l'approche globable d'architecture.
 ![](/Pictures/iRobotArchitecture.png?raw=true)
-* Deep dive technique @edge
 
-# Deep architecture design
+# 2. Architecture détaillée
+Il est maintenant temps de voir comment doit s'implémenter finement cette approche :)
+Le schéma ci-après présente l'approche détaillée, chacun des bloc fera l'objet d'un chapitre vous présentant comment l'implémenter.
+
+L'architecture est découpée en plusieurs blocs distincts qui dialoguent entre eux ou via des messages (évènements sur un bus de données), ou via flag (fichier dans un container).
 ![](/Pictures/iRobotArchitecture-DEEP%20ARCHITECTURE$.png?raw=true)
 
-# Architecture "at the edge"
+Nous pouvons résumer cette architecture en cinq blocs dinstincts:
+#### Bloc de services déployés @Edge (1)
+
+Les différents services Azure permettant la collecte de données depuis les capteurs positionnés sur le robot se feront directement sur une gateway associé au(x) robot(s) industriel(s).
+Les services utilisés sont les suivants
+- Le runtime Azure IoT Edge;
+- Les services IoT Edge Hub & Agent;
+- Azure SQL Edge;
+- Azure Blob Storage Edge;
+- Module personnalisé avec le runtime Azure Function.
+
+Deux tables seront modélisées, l'une permettant d'intégrer l'ensembles des évènements provenant des sources, l'aure permettant d'exposer les résultats du modèle de machine learning embarqué.
+L'intégration des données sera géré par le nouveau service de streaming contenu dans Azure SQL Edge. Ce service permet de créer des job de streaming permettant la capture temps réel d'évènement @edge et l'insertion directement en base de données.
+
+#### Modèle de machine learning entrainé dans le cloud et déployé @edge (2)
+
+#### <<<<<<<<<<< Courte description du modèle ML >>>>>>>>>>>
+Ce modèle de machine learning est exporté au format ONNX et directement intégré dans une base/table Azure SQL Edge.
+La nouvelle fonctionnalité PREDICT de Azure SQL Edge permettra d'appeler ce modèle depuis une procédure stockée afin, toutes les heures, d'étudier les évènements reçus afin de déterminer les risques d'anomalies au niveau du robot.
+
+La périodicité du lancement sera géré depuis une Azure Function directement depuis un custom runtime embarqué dans la gateway @Edge.
+
+#### Services de synchronisation dans le cloud Azure (3)
+La résultante du modèle ML sera matérialisée dans une table SQL (dans Azure SQL Edge) puis traité par le hub d'évènement sur une route spécifique qui permettra l'export de l'information sur un fichier / flag dans le service Azure Storage Edge.
+
+Ce service de stockage se syncrhonisera en automatique sur un service Azure Storage dans le cloud Azure qui sera le trigger d'une chaine de services permettant l'inégration de la transaction dans le système aval.
+
+#### Création et validation de la transaction dans le cloud Azure via les services de Blockchain (4)
+Une Azure function sera déclenchée à réception de l'évènement de trigger lié à la syncrhonisation du flag de déclenchement de la transaction.
+
+Dès lors, une sous Azure Function sera utilisé comme transaction builder et va créer la transaction qui sera présenter à l'environnement blockchain.
+
+L'infrastructure blockchain est de type privée, basé sur Quorum (Ethereum) ou Hyperledger permettant ainsi de répondre à une problématique de validation de transactions privées en POA (Proof of Authority).
+
+L'utilisation d'un service tel que Azure Blockchain Service ou AKS Hyperledger permet, via la création d'une application smart contract, de valider la transaction issu du transaction builder.
+
+Dès que celle-ci est validée le Azure Blockchain Data Manager intégré à Azure BLockchain Service permet de router l'information de validation (ainsi qu'un sous ensemble de propriétés) vers un Azure Event Grid afin de "broadcaster" la notification sur plusieurs systèmes dépendant de cette information tels que le système ERP, une fonction pour mise à jour de la base Azure CosmosDB etc.
+
+#### Déclenchement de l'ordre de maintenance dans les systèmes ERP et applications (5)
+L'information a été validé par toutes les entitées dans le service de blockchain.
+
+Le système ERP est alors notifié et une transaction est déclenchée dans celui-ci.
+L'information est aussi écrite dans une base Azure CosmosDB (configurée en serverless afin de ne pas engender de coûts quand il n'y a pas de problèmes remontés). Cette base est source d'une application liée à la maintenance des robots industriels. 
+
+Cette application est développée en "low code" depuis le service Microsoft PowerApps et mis à disposition sur les smartphones des différentes techniciens d'interventions.
+
+![](/Pictures/Archi%20bulletsShort.png?raw=true)
+
+# 3. Architecture "at the edge"
 
 ## Définition
 
@@ -255,8 +363,8 @@ https://docs.microsoft.com/fr-fr/azure/azure-sql-edge/deploy-onnx
 
 ## Configuration de la synchronisation du storage account avec le cloud
 
-# Architecture "Cloud"
-4. Deep dive technique cloud
+# 4. Architecture "Cloud"
+Deep dive technique cloud
 
 ## 4.1 Création et entrainement du modèle ML de prédiction des pannes
 
