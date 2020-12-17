@@ -377,7 +377,19 @@ Vous pourrez trouver toutes les informations sur ce type de consensus sur le lie
 
 Le service de Blockchain Microsoft permet de créer toute l'infrastructure de validation de transaction en mode PaaS (Platform as a Service). Vous trouverez toutes les informations ici : https://docs.microsoft.com/fr-fr/azure/blockchain/service/overview
 
-Afin de permettre la validation de nos transactions il nous faudra 
+Vous êtes libre d'utiliser le service Azure Blockchain service ou le template AKS Hyperledger pour réaliser la validation des transactions.
+Le template AKS est disponible ici : https://docs.microsoft.com/fr-fr/azure/blockchain/templates/hyperledger-fabric-consortium-azure-kubernetes-service
+
+Nous privilégons ici l'utilisation du service PaaS Azure Blockchain Service basé sur Quorum (Ethereum).
+Quorum est un fork de go-ethereum, open source et toutes les informations sont disponibles ici : https://github.com/ConsenSys/quorum
+
+Le déploiement va permettre la mise à disposition d'un noeud Blockchain.
+![](/Pictures/Blockchain1.jpg?raw=true)
+
+Chacune des parties prenante se verra attribuer sa propre architecture de validation, soir un consortium constitué de n noeuds de validation.
+![](/Pictures/BlockchainConsortium.jpg?raw=true)
+
+Afin de permettre la validation de nos transactions il nous faudra donc déployer
 - Un environnement de blockchain provisionné dans le tenant Azure de la solution
 - Un consortium créé avec plusieurs noeuds de validation
 - Un smart contract développé et déployé sur la blockchain
