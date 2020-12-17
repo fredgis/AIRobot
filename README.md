@@ -375,15 +375,15 @@ Afin de créer l'environnement Blockchain de validation des transactions de main
 Ce nouveau service permet de créer un environnement Blockchain privé sur protocole Quorum (basé du Ethereum) avec un consensus de type POA (Proof of Authority).
 
 Le consensus de type POA permet a plusieurs noeuds de validations, donc autorités faisant parties d'un cercle de consensus, de valider une transaction émise sur la blockchain.
-Vous pourrez trouver toutes les informations sur ce type de consensus sur le lien suivant : https://en.wikipedia.org/wiki/Proof_of_authority
+Vous pourrez trouver toutes les informations sur ce type de consensus sur le lien suivant : [Proof of Authority](https://en.wikipedia.org/wiki/Proof_of_authority)
 
-Le service de Blockchain Microsoft permet de créer toute l'infrastructure de validation de transaction en mode PaaS (Platform as a Service). Vous trouverez toutes les informations ici : https://docs.microsoft.com/fr-fr/azure/blockchain/service/overview
+Le service de Blockchain Microsoft permet de créer toute l'infrastructure de validation de transaction en mode PaaS (Platform as a Service). Vous trouverez toutes les informations ici : [Azure Blockchain Service](https://docs.microsoft.com/fr-fr/azure/blockchain/service/overview)
 
 Vous êtes libre d'utiliser le service Azure Blockchain service ou le template AKS Hyperledger pour réaliser la validation des transactions.
 Le template AKS est disponible ici : [AKS Template](https://docs.microsoft.com/fr-fr/azure/blockchain/templates/hyperledger-fabric-consortium-azure-kubernetes-service)
 
 Nous privilégons ici l'utilisation du service PaaS Azure Blockchain Service basé sur Quorum (Ethereum).
-Quorum est un fork de go-ethereum, open source et toutes les informations sont disponibles ici : https://github.com/ConsenSys/quorum
+Quorum est un fork de go-ethereum, open source et toutes les informations sont disponibles ici : [GitHub Quorum](https://github.com/ConsenSys/quorum)
 
 Le déploiement va permettre la mise à disposition d'un noeud Blockchain.
 ![](/Pictures/Blockchain-MEMBER.png?raw=true)
@@ -425,12 +425,12 @@ Dès lors via l'extension Metamask et une connexion par RPC personnalisé vous p
 Un smart contrat est un contrat numérique immuable déployé sur la blockchain. Toutes les transactions devant être validées sur la blockchain doivent répondre aux exigences de ce smart contrat.
 
 Dans une vision simplifiée un smart contract représente un ensemble de règles que doit respecter une transaction pour que celle-ci soit validée. Chacun des noeuds du consortium valide à son tour la transaction, si tous la valide alors elle est écrite dans la Blockchain de façon immuable.
-Toutes les informations sur les smart contract ici : https://en.wikipedia.org/wiki/Smart_contract
+Toutes les informations sur les smart contract ici : [Wikipedia Smart Contract](https://en.wikipedia.org/wiki/Smart_contract)
 
 Afin de déployer un smart contract vous pouvez utiliser Visual Studio Code avec l'extension "Azure Blockchain Development Kit" qui est compatible avec tout type de déploiement cloud et non cloud.
-https://docs.microsoft.com/fr-fr/azure/blockchain/service/connect-vscode
+[Connexion avec Visual Studio Code](https://docs.microsoft.com/fr-fr/azure/blockchain/service/connect-vscode)
 
-Une autre solution est d'accéder directement à https://remix.ethereum.org dans votre navigateur.
+Une autre solution est d'accéder directement à [Remix](https://remix.ethereum.org) dans votre navigateur.
 La programmation se fait via Solidity et se présente comme suit. Vous pouvez y déployer vos règles de validation.
 
 ```Solidity
