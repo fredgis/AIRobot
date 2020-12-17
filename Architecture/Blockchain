@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2020-12-17T16:34:28.433Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36" etag="2ZatG831aaJoQNo4wueg" version="14.0.4" type="github">
+<mxfile host="app.diagrams.net" modified="2020-12-17T16:35:11.750Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36" etag="po6mhmG5V1G16Vb3ck9p" version="14.0.4" type="github">
   <diagram id="AHTpAVU7na2g8Y_ZHHtf" name="Page-1">
     <mxGraphModel dx="1002" dy="683" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -62,6 +62,9 @@
         </mxCell>
         <mxCell id="wdNt94v1VeRKFMHkcSK0-22" value="Ressource User" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;strokeColor=none;fillColor=#00BEF2;shape=mxgraph.azure.user;dashed=1;" vertex="1" parent="1">
           <mxGeometry x="56.25" y="370" width="47.5" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="wdNt94v1VeRKFMHkcSK0-24" value="Blockchain Member" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;dashed=1;fontSize=16;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="365" y="370" width="170" height="20" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
