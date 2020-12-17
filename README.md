@@ -63,7 +63,6 @@ Dans notre cas nous ferons les actions suivantes:
 
 Le schéma d'architecture ci-après présente l'approche globable d'architecture.
 ![](/Pictures/iRobotArchitecture.png?raw=true)
-* Deep dive technique @edge
 
 # Deep Architecture design
 Il est maintenant temps de voir comment doit s'implémenter finement cette approche :)
@@ -72,8 +71,8 @@ Le schéma ci-après présente l'approche détaillée, chacun des bloc fera l'ob
 L'architecture est découpée en plusieurs blocs distincts qui dialoguent entre eux ou via des messages (évènements sur un bus de données), ou via flag (fichier dans un container).
 ![](/Pictures/iRobotArchitecture-DEEP%20ARCHITECTURE$.png?raw=true)
 
-Nous pouvons résumer cette architecture en inq blocs dinstincts:
-![](/Pictures/Archi%20bulletsShort?raw=true)
+Nous pouvons résumer cette architecture en cinq blocs dinstincts:
+![](/Pictures/Archi%20bulletsShort.png?raw=true)
 
 1.
 
