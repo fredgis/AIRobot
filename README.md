@@ -436,21 +436,30 @@ pragma solidity ^0.5.0;
 
 contract simple {
     uint balance;
-
     constructor() public{
         balance = 0;
     }
-
     function add(uint _num) public {
         balance += _num;
     }
-
     function get() public view returns (uint){
         return balance;
     }
 }
 ```
+Dès lors que votre infrastructure est déployé ainsi que votre smart contract il est possible de le tester directement depuis par exemple une logic apps.
+Pour se faire il vous faudra récupérer l'adresse de votre smart contract une dois déployé et l'entrée en paramètre dans la tâche logic apps.
 
+Exemple de paramétrage.
+![](/Pictures/LogicApps.jpg?raw=true)
+
+#### Procédures complètes pour référence:
+- [Création d'un noeud via Azure CLI](https://docs.microsoft.com/fr-fr/azure/blockchain/service/create-member-cli);
+- [Création d'un noeud via un modèle ARM](https://docs.microsoft.com/fr-fr/azure/blockchain/service/create-member-template);
+- [Se connecter à un noeud via Metamask](https://docs.microsoft.com/fr-fr/azure/blockchain/service/connect-metamask);
+- [Création d'un smart contract via Visual Studio Code](https://docs.microsoft.com/fr-fr/azure/blockchain/service/send-transaction);
+- [Gestion du consortium via PowerShell](https://docs.microsoft.com/fr-fr/azure/blockchain/service/manage-consortium-powershell);
+- [Création d'une interface d'appel avec Azure Logic Apps](https://docs.microsoft.com/fr-fr/azure/blockchain/service/ethereum-logic-app).
 
 ### Création du compute Azure Function pour router la transaction (transaction builder)
 
