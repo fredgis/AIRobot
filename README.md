@@ -366,19 +366,89 @@ https://docs.microsoft.com/fr-fr/azure/azure-sql-edge/deploy-onnx
 # 4. Architecture "Cloud"
 Deep dive technique cloud
 
-## 4.1 Création et entrainement du modèle ML de prédiction des pannes
+### Création et entrainement du modèle ML de prédiction des pannes
 
-## 4.2 Création du compute Azure Function pour router la transaction (transaction builder)
+### Création de l'environnement Blockchain (POA) pour validation des transactions (Quorum)
+Afin de créer l'environnement Blockchain de validation des transactions de maintenance nous utiliserons le service encore en Preview Azure Blockchain Services.
+Ce nouveau service permet de créer un environnement Blockchain privé sur protocole Quorum (basé du Ethereum) avec un consensus de type POA (Proof of Authority).
 
-## 4.3 Création de l'environnement Blockchain (POA) pour validation des transactions (Quorum)
+Le consensus de type POA permet a plusieurs noeuds de validations, donc autorités faisant parties d'un cercle de consensus, de valider une transaction émise sur la blockchain.
+Vous pourrez trouver toutes les informations sur ce type de consensus sur le lien suivant : https://en.wikipedia.org/wiki/Proof_of_authority
 
-## 4.4 Routage de l'informationd e transaction validée sur un event grid (Blockchain Data Manager)
+Le service de Blockchain Microsoft permet de créer toute l'infrastructure de validation de transaction en mode PaaS (Platform as a Service). Vous trouverez toutes les informations ici : https://docs.microsoft.com/fr-fr/azure/blockchain/service/overview
 
-## 4.5 Création de la CosmosDB et interaction avec Azure Function et Event Grid
+Afin de permettre la validation de nos transactions il nous faudra 
+- Un environnement de blockchain provisionné dans le tenant Azure de la solution
+- Un consortium créé avec plusieurs noeuds de validation
+- Un smart contract développé et déployé sur la blockchain
 
-## 4.6 Interconnexion avec ERP
+Pour se faire il vous faudra vous connecter à l'aide de la commande az login et installer l'extension Blockchain.
+```Shell
+az login
+az extension add --name blockchain
+```
 
-## 4.7 Création de la PowerApps de maintenance
+Vous pouvez maintenant créer un membre blockchain (membre unique que vous pourrez par la suite faire évoluer sur plusieurs noeuds de validation si les transactions augmentent)
+```Shell
+az blockchain member create \
+                            --resource-group "MyResourceGroup" \
+                            --name "myblockchainmember" \
+                            --location "eastus" \
+                            --password "strongMemberAccountPassword@1" \
+                            --protocol "Quorum" \
+                            --consortium "myconsortium" \
+                            --consortium-management-account-password "strongConsortiumManagementPassword@1" \
+                            --sku "Basic"
+```
+Afin de tester le bon fonctionnement de votre infrastructure vous pouvez maintenant tester la connexion sur votre blockchain privée en utilisant par exemple l'extension de navigateur Metamask.
+Il vous faudra dans un premier temps récupérer la chaîne de connexion, vous la trouverez dans le portail sur le neoud de trabnsaction. Celle-ci est de la forme suivante.
+
+```Shell
+https://<your dns>.blockchain.azure.com:3200/<your access key>
+```
+
+Dès lors via l'extension Metamask et une connexion par RPC personnalisé vous pouvez accéder à votre réseau de blockchain privé et commencer le déploiement de "Smart Contract".
+Un smart contrat est un contrat numérique immuable déployé sur la blockchain. Toutes les transactions devant être validées sur la blockchain doivent répondre aux exigences de ce smart contrat.
+
+Dans une vision simplifiée un smart contract représente un ensemble de règles que doit respecter une transaction pour que celle-ci soit validée. Chacun des noeuds du consortium valide à son tour la transaction, si tous la valide alors elle est écrite dans la Blockchain de façon immuable.
+Toutes les informations sur les smart contract ici : https://en.wikipedia.org/wiki/Smart_contract
+
+Afin de déployer un smart contract vous pouvez utiliser Visual Studio Code avec l'extension "Azure Blockchain Development Kit" qui est compatible avec tout type de déploiement cloud et non cloud.
+https://docs.microsoft.com/fr-fr/azure/blockchain/service/connect-vscode
+
+Une autre solution est d'accéder directement à https://remix.ethereum.org dans votre navigateur.
+La programmation se fait via Solidity et se présente comme suit. Vous pouvez y déployer vos règles de validation.
+
+```Solidity
+pragma solidity ^0.5.0;
+
+contract simple {
+    uint balance;
+
+    constructor() public{
+        balance = 0;
+    }
+
+    function add(uint _num) public {
+        balance += _num;
+    }
+
+    function get() public view returns (uint){
+        return balance;
+    }
+}
+```
+
+
+### Création du compute Azure Function pour router la transaction (transaction builder)
+
+### Routage de l'informationd e transaction validée sur un event grid (Blockchain Data Manager)
+
+### Création de la CosmosDB et interaction avec Azure Function et Event Grid
+
+### Interconnexion avec ERP
+
+### Création de la PowerApps de maintenance
 
 
 
