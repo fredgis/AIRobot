@@ -1,6 +1,3 @@
-# AIRobot
-AIRobot ! From robots to maintenance service
-
 # Architecture overview
 Imaginez un monde où les robots (dixit robots industriels) effecturais eux-mêmes un diagnostique de leur état de santé et demanderai eux-mêmes une intervention de maintenance.
 
@@ -15,7 +12,7 @@ Nous allons parcourir au gré de cet article les aspects suivants qui permettent
 
 L'idée globale du projet est donc la remontée de données depuis plusieurs capteurs d'un robot industriel sur une gateway @Edge qui, via un algorithme de machine learning embarqué, prendra la décision de remonter une future défaillance du système.
 
-Nous parlons ici d'une défaillance non prédictible et non liée à une seule remontée de capteur. En effet, beaucoup de robots industriels embarquent désormais leurs propres algorithmes et recueil de données afin d'anticiper une panne sur une pière et ainsi alerter les opérateurs en amont.
+Nous parlons ici d'une défaillance non prédictible et non liée à une seule remontée de capteur. En effet, beaucoup de robots industriels embarquent désormais leurs propres algorithmes et recueil de données afin d'anticiper une panne sur une pièce et ainsi alerter les opérateurs en amont.
 
 La mise en place d'une telle architecture va permettre de croiser les remontées de différents capteurs afin d'identifier un fonctionnement anormal du robot dans le temps, une dérive et globalement anticiper un disfonctionnement global très en amont de défaillances unitaires. 
 C'est donc une approche globale sur de multiples capteurs non superviser qui visera une prise de décision sur une intervention / commande de matériel.
@@ -68,7 +65,25 @@ Le schéma d'architecture ci-après présente l'approche globable d'architecture
 ![](/Pictures/iRobotArchitecture.png?raw=true)
 * Deep dive technique @edge
 
-# Deep architecture design
+# Deep Architecture design
+Il est maintenant temps de voir comment doit s'implémenter finement cette approche :)
+Le schéma ci-après présente l'approche détaillée, chacun des bloc fera l'objet d'un chapitre vous présentant comment l'implémenter.
+
+L'architecture est découpée en plusieurs blocs distincts qui dialoguent entre eux ou via des messages (évènements sur un bus de données), ou via flag (fichier dans un container).
+Nous pouvons résumer cette architecture en inq blocs dinstincts:
+
+1.
+
+2.
+
+3.
+
+4.
+
+5.
+
+
+
 ![](/Pictures/iRobotArchitecture-DEEP%20ARCHITECTURE$.png?raw=true)
 
 # Architecture "at the edge"
