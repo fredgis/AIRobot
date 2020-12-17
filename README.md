@@ -384,7 +384,7 @@ Nous privilégons ici l'utilisation du service PaaS Azure Blockchain Service bas
 Quorum est un fork de go-ethereum, open source et toutes les informations sont disponibles ici : https://github.com/ConsenSys/quorum
 
 Le déploiement va permettre la mise à disposition d'un noeud Blockchain.
-![](/Pictures/Blockchain1.jpg?raw=true | width=50)
+![](/Pictures/Blockchain1.jpg?raw=true)
 
 Chacune des parties prenante se verra attribuer sa propre architecture de validation, soir un consortium constitué de n noeuds de validation.
 ![](/Pictures/BlockchainConsortium.jpg?raw=true)
