@@ -1,3 +1,5 @@
+> **Notes:** Cet article est un mixte entre hands on et hackaton, nous espérons qu'il vous donnera une meilleur vision des possiblités industrielles de telles approches :)
+
 # 1. Architecture introduction
 Imaginez un monde où les robots (dixit robots industriels) effecturais eux-mêmes un diagnostique de leur état de santé et demanderai eux-mêmes une intervention de maintenance.
 
@@ -378,7 +380,7 @@ Vous pourrez trouver toutes les informations sur ce type de consensus sur le lie
 Le service de Blockchain Microsoft permet de créer toute l'infrastructure de validation de transaction en mode PaaS (Platform as a Service). Vous trouverez toutes les informations ici : https://docs.microsoft.com/fr-fr/azure/blockchain/service/overview
 
 Vous êtes libre d'utiliser le service Azure Blockchain service ou le template AKS Hyperledger pour réaliser la validation des transactions.
-Le template AKS est disponible ici : https://docs.microsoft.com/fr-fr/azure/blockchain/templates/hyperledger-fabric-consortium-azure-kubernetes-service
+Le template AKS est disponible ici : [AKS Template](https://docs.microsoft.com/fr-fr/azure/blockchain/templates/hyperledger-fabric-consortium-azure-kubernetes-service)
 
 Nous privilégons ici l'utilisation du service PaaS Azure Blockchain Service basé sur Quorum (Ethereum).
 Quorum est un fork de go-ethereum, open source et toutes les informations sont disponibles ici : https://github.com/ConsenSys/quorum
@@ -452,6 +454,9 @@ Pour se faire il vous faudra récupérer l'adresse de votre smart contract une d
 
 Exemple de paramétrage.
 ![](/Pictures/LogicApps.jpg?raw=true)
+
+Il est maintenant possible de créer son propre transaction builder en appelant depuis une Azure Function ou la logic apps préalablement créé enrichie de tous les paramètres attendus ou directement d'interagir avec l'infrastructure Blockchain.
+La logique étant qu'à la réception du flag (fichier) synchronisé depuis le Azure Storage Edge vers le Azure Storage Cloud celui-ci active le trigger d'une Azure Function et déclenche alors le process d'interaction avec la Blockchain.
 
 #### Procédures complètes pour référence:
 - [Création d'un noeud via Azure CLI](https://docs.microsoft.com/fr-fr/azure/blockchain/service/create-member-cli);
