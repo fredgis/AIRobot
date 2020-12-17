@@ -72,7 +72,8 @@ L'architecture est découpée en plusieurs blocs distincts qui dialoguent entre 
 ![](/Pictures/iRobotArchitecture-DEEP%20ARCHITECTURE$.png?raw=true)
 
 Nous pouvons résumer cette architecture en cinq blocs dinstincts:
-1. Bloc de services déployés @Edge
+# 1. Bloc de services déployés @Edge
+
 Les différents services Azure permettant la collecte de données depuis les capteurs positionnés sur le robot se feront directement sur une gateway associé au(x) robot(s) industriel(s).
 Les services utilisés sont les suivants
 - Le runtime Azure IoT Edge;
@@ -84,29 +85,37 @@ Les services utilisés sont les suivants
 Deux tables seront modélisées, l'une permettant d'intégrer l'ensembles des évènements provenant des sources, l'aure permettant d'exposer les résultats du modèle de machine learning embarqué.
 L'intégration des données sera géré par le nouveau service de streaming contenu dans Azure SQL Edge. Ce service permet de créer des job de streaming permettant la capture temps réel d'évènement @edge et l'insertion directement en base de données.
 
-2. Modèle de machine learning entrainé dans le cloud et déployé @edge
-<<<<<<<<<<< Courte description du modèle ML >>>>>>>>>>>
+# 2. Modèle de machine learning entrainé dans le cloud et déployé @edge
 
+# <<<<<<<<<<< Courte description du modèle ML >>>>>>>>>>>
 Ce modèle de machine learning est exporté au format ONNX et directement intégré dans une base/table Azure SQL Edge.
 La nouvelle fonctionnalité PREDICT de Azure SQL Edge permettra d'appeler ce modèle depuis une procédure stockée afin, toutes les heures, d'étudier les évènements reçus afin de déterminer les risques d'anomalies au niveau du robot.
+
 La périodicité du lancement sera géré depuis une Azure Function directement depuis un custom runtime embarqué dans la gateway @Edge.
 
-3. Services de synchronisation dans le cloud Azure
+# 3. Services de synchronisation dans le cloud Azure
 La résultante du modèle ML sera matérialisée dans une table SQL (dans Azure SQL Edge) puis traité par le hub d'évènement sur une route spécifique qui permettra l'export de l'information sur un fichier / flag dans le service Azure Storage Edge.
+
 Ce service de stockage se syncrhonisera en automatique sur un service Azure Storage dans le cloud Azure qui sera le trigger d'une chaine de services permettant l'inégration de la transaction dans le système aval.
 
-4. Création et validation de la transaction dans le cloud Azure via les services de Blockchain 
+# 4. Création et validation de la transaction dans le cloud Azure via les services de Blockchain 
 Une Azure function sera déclenchée à réception de l'évènement de trigger lié à la syncrhonisation du flag de déclenchement de la transaction.
+
 Dès lors, une sous Azure Function sera utilisé comme transaction builder et va créer la transaction qui sera présenter à l'environnement blockchain.
+
 L'infrastructure blockchain est de type privée, basé sur Quorum (Ethereum) ou Hyperledger permettant ainsi de répondre à une problématique de validation de transactions privées en POA (Proof of Authority).
 
 L'utilisation d'un service tel que Azure Blockchain Service ou AKS Hyperledger permet, via la création d'une application smart contract, de valider la transaction issu du transaction builder.
+
 Dès que celle-ci est validée le Azure Blockchain Data Manager intégré à Azure BLockchain Service permet de router l'information de validation (ainsi qu'un sous ensemble de propriétés) vers un Azure Event Grid afin de "broadcaster" la notification sur plusieurs systèmes dépendant de cette information tels que le système ERP, une fonction pour mise à jour de la base Azure CosmosDB etc.
 
-5. Déclenchement de l'ordre de maintenance dans les systèmes ERP et applications
+# 5. Déclenchement de l'ordre de maintenance dans les systèmes ERP et applications
 L'information a été validé par toutes les entitées dans le service de blockchain.
+
 Le système ERP est alors notifié et une transaction est déclenchée dans celui-ci.
-L'information est aussi écrite dans une base Azure CosmosDB (configurée en serverless afin de ne pas engender de coûts quand il n'y a pas de problèmes remontés). Cette base est source d'une application liée à la maintenance des robots industriels. Cette application est développée en "low code" depuis le service Microsoft PowerApps et mis à disposition sur les smartphones des différentes techniciens d'interventions.
+L'information est aussi écrite dans une base Azure CosmosDB (configurée en serverless afin de ne pas engender de coûts quand il n'y a pas de problèmes remontés). Cette base est source d'une application liée à la maintenance des robots industriels. 
+
+Cette application est développée en "low code" depuis le service Microsoft PowerApps et mis à disposition sur les smartphones des différentes techniciens d'interventions.
 
 ![](/Pictures/Archi%20bulletsShort.png?raw=true)
 
