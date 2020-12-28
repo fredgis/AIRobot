@@ -1,3 +1,5 @@
+> **Notes:** Cet article est un mixte entre hands on et hackaton, nous espérons qu'il vous donnera une meilleur vision des possiblités industrielles de telles approches :)
+
 # 1. Architecture introduction
 Imaginez un monde où les robots (dixit robots industriels) effecturais eux-mêmes un diagnostique de leur état de santé et demanderai eux-mêmes une intervention de maintenance.
 
@@ -87,7 +89,17 @@ L'intégration des données sera géré par le nouveau service de streaming cont
 
 #### Modèle de machine learning entrainé dans le cloud et déployé @edge (2)
 
-#### <<<<<<<<<<< Courte description du modèle ML >>>>>>>>>>>
+Le développement de la solution de machine learning utilise le service Azure Machine Learning. Une fois le modèle developpé, il est exporté sous ONNX. Open Neural Network Exchange est un moteur d'inférence haute performance, optimisé pour le cloud et les infrastructures at the edge. Le modèle utilisé est un autoencoder lstm (long short-term memory). Cette approche, basée sur les autoencodeurs et sur les réseaux de neurones récurrents, offre plusieurs avantages dans le cadre de la détection d'anomalie pour la flotte de robot :
+
+* Algorithme pour la prévision de séries temporelles permettant de prendre en compte l'évolution des capteurs au cours du temps et non seulement l'état des capteurs à l'instant t.
+* Algorithme se basant sur le fonctionnement nominal des robots et qui sera capable de détecter n'importe quel type d'anomalie dans le futur. Il n'y a donc pas besoin d'une base de données d'entraînement comportant des anomalies. C'est un algorithme de type non supervisé.
+
+Plus précisemment, l'entrée de l'algorithme reçoit la valeur des capteurs lors de la dernière heure à différents instants. L'autoencodeur se compose en deux parties, la phase d'encodage et de décodage. La phase d'encodage compacte l'information en un nombre de neurones inférieur au nombre de neurones de la couche d'entrée du réseau. La phase de décodage reconstruit l'entrée de l'algorithme. Le modèle apprend donc à reconstruite les données initiales en les faisant passer par un goulot d'entranglement. Une fois les données d'entrée reconstruites, on peut déterminer la présence ou non d'une anomalie en comparant les données d'entrée et de sortie.
+
+Pour cela, il suffit de calculer l'erreur générée par les données. L'erreur correspond à la moyenne de la différence en valeur absolue terme à terme entre les données d'entrées et de sorties. Si cette erreur est supérieure à un seuil qui est préalablement fixé lors de la phase d'entrainement, alors le robot est en fonctionnement anormal. D'un point de vue du modèle, cela signifie que l'autoencodeur lstm n'a pas bien réussi à reconstruire les données d'entrée. Si cette erreur est inférieur à ce seuil, alors l'algortihme a suffisamment bien reconstruit l'entrée et cela signfie que le robot est en fonctionnement nominal.
+
+Le modèle est développé à l'aide du service Azure Machine Learning. Dans un workspace, deux scripts sont créés. Le premier script permet de mettre en oeuvre le contexte d'exécution du modèle. Nous indiquons notamment la cible de calcul et nous mettons en place un environnement d'exécution. Nous définissons également une expérience qui va permettre de récupérer toutes les informations, les métriques et les graphiques générés lors de la phase d'entrainement. Ce script appelle le script d'entrainement qui charge les données, réalise le data preprocessing et entraine le modèle.
+
 Ce modèle de machine learning est exporté au format ONNX et directement intégré dans une base/table Azure SQL Edge.
 La nouvelle fonctionnalité PREDICT de Azure SQL Edge permettra d'appeler ce modèle depuis une procédure stockée afin, toutes les heures, d'étudier les évènements reçus afin de déterminer les risques d'anomalies au niveau du robot.
 
@@ -366,19 +378,111 @@ https://docs.microsoft.com/fr-fr/azure/azure-sql-edge/deploy-onnx
 # 4. Architecture "Cloud"
 Deep dive technique cloud
 
-## 4.1 Création et entrainement du modèle ML de prédiction des pannes
+### Création et entrainement du modèle ML de prédiction des pannes
 
-## 4.2 Création du compute Azure Function pour router la transaction (transaction builder)
+### Création de l'environnement Blockchain (POA) pour validation des transactions (Quorum)
+Afin de créer l'environnement Blockchain de validation des transactions de maintenance nous utiliserons le service encore en Preview Azure Blockchain Services.
+Ce nouveau service permet de créer un environnement Blockchain privé sur protocole Quorum (basé du Ethereum) avec un consensus de type POA (Proof of Authority).
 
-## 4.3 Création de l'environnement Blockchain (POA) pour validation des transactions (Quorum)
+Le consensus de type POA permet a plusieurs noeuds de validations, donc autorités faisant parties d'un cercle de consensus, de valider une transaction émise sur la blockchain.
+Vous pourrez trouver toutes les informations sur ce type de consensus sur le lien suivant : [Proof of Authority](https://en.wikipedia.org/wiki/Proof_of_authority)
 
-## 4.4 Routage de l'informationd e transaction validée sur un event grid (Blockchain Data Manager)
+Le service de Blockchain Microsoft permet de créer toute l'infrastructure de validation de transaction en mode PaaS (Platform as a Service). Vous trouverez toutes les informations ici : [Azure Blockchain Service](https://docs.microsoft.com/fr-fr/azure/blockchain/service/overview)
 
-## 4.5 Création de la CosmosDB et interaction avec Azure Function et Event Grid
+Vous êtes libre d'utiliser le service Azure Blockchain service ou le template AKS Hyperledger pour réaliser la validation des transactions.
+Le template AKS est disponible ici : [AKS Template](https://docs.microsoft.com/fr-fr/azure/blockchain/templates/hyperledger-fabric-consortium-azure-kubernetes-service)
 
-## 4.6 Interconnexion avec ERP
+Nous privilégons ici l'utilisation du service PaaS Azure Blockchain Service basé sur Quorum (Ethereum).
+Quorum est un fork de go-ethereum, open source et toutes les informations sont disponibles ici : [GitHub Quorum](https://github.com/ConsenSys/quorum)
 
-## 4.7 Création de la PowerApps de maintenance
+Le déploiement va permettre la mise à disposition d'un noeud Blockchain.
+![](/Pictures/Blockchain-MEMBER.png?raw=true)
+
+Chacune des parties prenante se verra attribuer sa propre architecture de validation, soir un consortium constitué de n noeuds de validation.
+![](/Pictures/Blockchain-CONSORTIUM.png?raw=true)
+
+Afin de permettre la validation de nos transactions il nous faudra donc déployer
+- Un environnement de blockchain provisionné dans le tenant Azure de la solution
+- Un consortium créé avec plusieurs noeuds de validation
+- Un smart contract développé et déployé sur la blockchain
+
+Pour se faire il vous faudra vous connecter à l'aide de la commande az login et installer l'extension Blockchain.
+```Shell
+az login
+az extension add --name blockchain
+```
+
+Vous pouvez maintenant créer un membre blockchain (membre unique que vous pourrez par la suite faire évoluer sur plusieurs noeuds de validation si les transactions augmentent)
+```Shell
+az blockchain member create \
+                            --resource-group "MyResourceGroup" \
+                            --name "myblockchainmember" \
+                            --location "eastus" \
+                            --password "strongMemberAccountPassword@1" \
+                            --protocol "Quorum" \
+                            --consortium "myconsortium" \
+                            --consortium-management-account-password "strongConsortiumManagementPassword@1" \
+                            --sku "Basic"
+```
+Afin de tester le bon fonctionnement de votre infrastructure vous pouvez maintenant tester la connexion sur votre blockchain privée en utilisant par exemple l'extension de navigateur Metamask.
+Il vous faudra dans un premier temps récupérer la chaîne de connexion, vous la trouverez dans le portail sur le neoud de trabnsaction. Celle-ci est de la forme suivante.
+
+```Shell
+https://<your dns>.blockchain.azure.com:3200/<your access key>
+```
+
+Dès lors via l'extension Metamask et une connexion par RPC personnalisé vous pouvez accéder à votre réseau de blockchain privé et commencer le déploiement de "Smart Contract".
+Un smart contrat est un contrat numérique immuable déployé sur la blockchain. Toutes les transactions devant être validées sur la blockchain doivent répondre aux exigences de ce smart contrat.
+
+Dans une vision simplifiée un smart contract représente un ensemble de règles que doit respecter une transaction pour que celle-ci soit validée. Chacun des noeuds du consortium valide à son tour la transaction, si tous la valide alors elle est écrite dans la Blockchain de façon immuable.
+Toutes les informations sur les smart contract ici : [Wikipedia Smart Contract](https://en.wikipedia.org/wiki/Smart_contract)
+
+Afin de déployer un smart contract vous pouvez utiliser Visual Studio Code avec l'extension "Azure Blockchain Development Kit" qui est compatible avec tout type de déploiement cloud et non cloud.
+[Connexion avec Visual Studio Code](https://docs.microsoft.com/fr-fr/azure/blockchain/service/connect-vscode)
+
+Une autre solution est d'accéder directement à [Remix](https://remix.ethereum.org) dans votre navigateur.
+La programmation se fait via Solidity et se présente comme suit. Vous pouvez y déployer vos règles de validation.
+
+```Solidity
+pragma solidity ^0.5.0;
+
+contract simple {
+    uint balance;
+    constructor() public{
+        balance = 0;
+    }
+    function add(uint _num) public {
+        balance += _num;
+    }
+    function get() public view returns (uint){
+        return balance;
+    }
+}
+```
+Dès lors que votre infrastructure est déployé ainsi que votre smart contract il est possible de le tester directement depuis par exemple une logic apps.
+Pour se faire il vous faudra récupérer l'adresse de votre smart contract une dois déployé et l'entrée en paramètre dans la tâche logic apps.
+
+Exemple de paramétrage.
+![](/Pictures/LogicApps.jpg?raw=true)
+
+Il est maintenant possible de créer son propre transaction builder en appelant depuis une Azure Function ou la logic apps préalablement créé enrichie de tous les paramètres attendus ou directement d'interagir avec l'infrastructure Blockchain.
+La logique étant qu'à la réception du flag (fichier) synchronisé depuis le Azure Storage Edge vers le Azure Storage Cloud celui-ci active le trigger d'une Azure Function et déclenche alors le process d'interaction avec la Blockchain.
+
+#### Procédures complètes pour référence:
+- [Création d'un noeud via Azure CLI](https://docs.microsoft.com/fr-fr/azure/blockchain/service/create-member-cli);
+- [Création d'un noeud via un modèle ARM](https://docs.microsoft.com/fr-fr/azure/blockchain/service/create-member-template);
+- [Se connecter à un noeud via Metamask](https://docs.microsoft.com/fr-fr/azure/blockchain/service/connect-metamask);
+- [Création d'un smart contract via Visual Studio Code](https://docs.microsoft.com/fr-fr/azure/blockchain/service/send-transaction);
+- [Gestion du consortium via PowerShell](https://docs.microsoft.com/fr-fr/azure/blockchain/service/manage-consortium-powershell);
+- [Création d'une interface d'appel avec Azure Logic Apps](https://docs.microsoft.com/fr-fr/azure/blockchain/service/ethereum-logic-app).
+
+### Routage de l'informationd e transaction validée sur un event grid (Blockchain Data Manager)
+
+### Création de la CosmosDB et interaction avec Azure Function et Event Grid
+
+### Interconnexion avec ERP
+
+### Création de la PowerApps de maintenance
 
 
 
