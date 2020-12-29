@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Azure.Devices.Client;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text.Unicode;
 using System.Text;
 using Newtonsoft.Json;
 
@@ -20,37 +19,73 @@ namespace RobotSimulator
 
             AppDomain.CurrentDomain.ProcessExit += (object sender, EventArgs e) =>
             {
+                Logger.LogInfo("TERM signal received.");
                 cancellationTokenSource.Cancel();
             };
+
+            Logger.LogInfo("Loading configuration.");
 
             var configuration = BuildConfiguration();
             var connectionString = GetConnectionString(configuration);
             var client = DeviceClient.CreateFromConnectionString(connectionString);
+            client.OperationTimeoutInMilliseconds = GetIoTHubTimeout(configuration) * 1000;
 
-            await client.OpenAsync(cancellationToken);
+            bool isConnected = false;
+
+            try
+            {
+                Logger.LogInfo("Connecting to IoT Hub.");
+                await client.OpenAsync();
+                isConnected = true;
+                Logger.LogInfo("Connected to IoT Hub.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.ToString());
+            }
+
             int temporalVariation = 0;
 
-            while (!cancellationToken.IsCancellationRequested)
+            while (isConnected && !cancellationToken.IsCancellationRequested)
             {
-                var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                temporalVariation = temporalVariation % 100;
-                var drillingTemp = TelemetryGenerator.ComputeDrillingTemperature(temporalVariation);
-                var drillBitFriction = TelemetryGenerator.ComputeDrillBitFriction(temporalVariation);
-                var drillingSpeed = TelemetryGenerator.ComputeDrillingSpeed(temporalVariation);
-                var liquidCoolingTemp = TelemetryGenerator.ComputeLiquidCoolingTemperature(temporalVariation);
+                try
+                {
+                    Logger.LogInfo("Computing telemetry.");
+                    var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    temporalVariation = temporalVariation % 100;
+                    var drillingTemp = TelemetryGenerator.ComputeDrillingTemperature(temporalVariation);
+                    var drillBitFriction = TelemetryGenerator.ComputeDrillBitFriction(temporalVariation);
+                    var drillingSpeed = TelemetryGenerator.ComputeDrillingSpeed(temporalVariation);
+                    var liquidCoolingTemp = TelemetryGenerator.ComputeLiquidCoolingTemperature(temporalVariation);
 
-                var telemetry = new TelemetryMessage(timestamp, drillingTemp, drillBitFriction, drillingSpeed, liquidCoolingTemp);
-                await client.SendEventAsync(new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(telemetry))), cancellationToken);
+                    Logger.LogInfo("Sending telemetry to IoT Hub.");
+                    var telemetry = new TelemetryMessage(timestamp, drillingTemp, drillBitFriction, drillingSpeed, liquidCoolingTemp);
+                    await client.SendEventAsync(new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(telemetry))));
+                    Logger.LogInfo("Telemetry sent.");
 
-                temporalVariation += 1;
-                await Task.Delay(TELEMETRY_FREQ_SEC * 1000, cancellationToken);
+                    temporalVariation += 1;
+                    await Task.Delay(TELEMETRY_FREQ_SEC * 1000, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex.ToString());
+                    cancellationTokenSource.Cancel();
+                }
             }
+
+            if(isConnected)
+            {
+                await client.CloseAsync();
+                client.Dispose();
+            }
+
+            Logger.LogInfo("Closing.");
         }
 
         private static IConfigurationRoot BuildConfiguration()
         {
             var configurationBuilder = new ConfigurationBuilder()
-                            .AddJsonFile("appsettings.json", false, false);
+                .AddJsonFile("appsettings.json", false, false);
 
             return configurationBuilder.Build();
         }
@@ -63,6 +98,19 @@ namespace RobotSimulator
                 throw new Exception("App Settings EdgeHubConnectionString not found.");
 
             return connectionString;
+        }
+
+        private static uint GetIoTHubTimeout(IConfigurationRoot configuration)
+        {
+            var timeout = configuration.GetSection("IoTHubTimeoutInSec").Value;
+
+            if (string.IsNullOrWhiteSpace(timeout))
+                throw new Exception("App Settings IoTHubTimeoutInSec not found.");
+
+            if (uint.TryParse(timeout, out uint parsedTimeout))
+                return parsedTimeout;
+
+            throw new Exception("App Settings IoTHubTimeoutInSec has bad format.");
         }
     }
 }
