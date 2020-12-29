@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
 using Newtonsoft.Json;
+using System.IO;
 
 namespace RobotSimulator
 {
@@ -85,6 +86,7 @@ namespace RobotSimulator
         private static IConfigurationRoot BuildConfiguration()
         {
             var configurationBuilder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetParent(AppContext.BaseDirectory).FullName)
                 .AddJsonFile("appsettings.json", false, false);
 
             return configurationBuilder.Build();
