@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Text;
 using Newtonsoft.Json;
 using System.IO;
+using System.Diagnostics;
 
 namespace RobotSimulator
 {
@@ -74,7 +75,7 @@ namespace RobotSimulator
                 }
             }
 
-            if(isConnected)
+            if (isConnected)
             {
                 await client.CloseAsync();
                 client.Dispose();
@@ -85,8 +86,10 @@ namespace RobotSimulator
 
         private static IConfigurationRoot BuildConfiguration()
         {
+            using var processModule = Process.GetCurrentProcess().MainModule;
+            
             var configurationBuilder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetParent(AppContext.BaseDirectory).FullName)
+                .SetBasePath(Path.GetDirectoryName(processModule?.FileName))
                 .AddJsonFile("appsettings.json", false, false);
 
             return configurationBuilder.Build();
