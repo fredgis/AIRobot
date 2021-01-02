@@ -87,7 +87,7 @@ def erreur(a,b):
 
 print(erreur(pred_onnx_std,pred_onnx[0]))
 ```
-Une importation des deux modèles est effectuée. Nous faisons passer les nouvelles données dans les modèles puis nous finissons par calculer l'erreur grâce à la fonction erreur. Si le résultat est inférieur au seuil, alors le robot est en fonctionnement normal sinon il est en fonctionnement anormal. Sur des données de plusieurs jours, on calcule l'erreur toute les minutes. Les résultats sont résumés sur le graphique ci-dessous. On s'aperçoit qu'il y a la détection d'une anomalie entre 4000 et 9000. Le fonctionnement du robot est normal le reste du temps. 
+Une importation des deux modèles est effectuée. Nous faisons passer les nouvelles données dans les modèles puis nous finissons par calculer l'erreur grâce à la fonction erreur. Si le résultat est inférieur au seuil, alors le robot est en fonctionnement normal sinon il est en fonctionnement anormal. Sur des données de plusieurs jours, on calcule l'erreur toute les minutes. Les résultats sont résumés sur le graphique ci-dessous. On s'aperçoit qu'il y a la détection d'une anomalie entre les séries temporelles 4000 et 9000. Le fonctionnement du robot est normal le reste du temps. 
 ![](/Pictures/Prediction_test_data_1609258462.png?raw=true)
 
 ### Conclusion :
