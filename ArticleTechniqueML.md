@@ -58,7 +58,7 @@ history = model.fit(X_train_std, X_train_std,
 
 ### Evaluation / Seuil d'erreur :
 Le modèle est entrainé à reconstruire les données générées par le robot en fonctionnement normal. L'objectif du modèle ci-dessus et d'attribuer une erreur de reconstruction à chaque série temporelle passée en entrée. C'est pour cela que la fonction de coût choisie est la mean_absolute_error mesurant l'erreur moyenne de la différence en valeur absolue entre les données d'entrées et de sorties. Une erreur faible signifie que le modèle est bien arrivé à reconstruire l'entrée donnée à l'algorithme, le robot est donc en fonctionnement normal. Une erreur élevée signifie que le modèle a rencontré des données éloignées des données normales sur lesquels il a été entrainé. Ces nouvelles données signifient donc que le robot est en fonctionnement anormal. Une erreur est faible si elle est inférieure à un seuil d'erreur et elevée si elle est supérieure à ce même seuil. Plus l'erreur est éloignée de ce dernier et plus le fonctionnement du robot est anormal. Déterminons graphiquement le seuil associé à notre modèle. Le graphique qui suit représente l'erreur de chaque série lors de la phase d'entrainement, c'est à dire en fonctionnement normal du robot. L'erreur de reconstruction maximale de la phase d'entrainement est de 0,9. C'est donc le seuil qui va nous servir à déterminer si les nouvelles données exploitées représentent le fonctionnement normal ou non du robot.
-SCREEN FINAL
+![](/Pictures/iRobotArchitecture.png?raw=true)
 
 ### Préparation de la mise en production sous ONNX :
 Nous disposons de deux étapes différentes dans notre algorithme. Le prétraitement des données puis le modèle. Nous mettons dans un pipeline la standardisation des données puis nous convertissons cette pipeline en modèle ONNX à l'aide de la commande convert_sklearn du module skl2onnx. Pour le modèle, nous utilisons la commande convert_keras du module keras2onnx pour convertir le modèle en ONNX. Le script ci-dessus montre comment utiliser les deux fichiers ONNX. 
@@ -88,7 +88,7 @@ def erreur(a,b):
 print(erreur(pred_onnx_std,pred_onnx[0]))
 ```
 Une importation des deux modèles est effectuée. Nous faisons passer les nouvelles données dans les modèles puis nous finissons par calculer l'erreur grâce à la fonction erreur. Si le résultat est inférieur au seuil, alors le robot est en fonctionnement normal sinon il est en fonctionnement anormal. Sur des données de plusieurs jours, on calcule l'erreur toute les minutes. Les résultats sont résumés sur le graphique ci-dessous. On s'aperçoit qu'il y a la détection d'une anomalie entre 4000 et 9000. Le fonctionnement du robot est normal le reste du temps. 
-SCREEN
+![](/Pictures/iRobotArchitecture.png?raw=true)
 
 ### Conclusion :
 Le développement de ce modèle s'est déroulé en plusieurs étapes. Après le traitement des données, l'autoencodeur lstm est créé, entrainé puis une recherche des meilleurs hyperparamètres est effectuée. L'algorithme est ensuite exporté au format ONNX. Il est maintenant prêt à ingérer de nouvelles données afin de déterminer si le robot est en fonctionnement normal ou non.
