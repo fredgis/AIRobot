@@ -375,6 +375,11 @@ https://docs.microsoft.com/fr-fr/azure/azure-sql-edge/deploy-onnx
 
 ## Configuration de la synchronisation du storage account avec le cloud
 
+
+https://docs.microsoft.com/en-us/azure/iot-edge/how-to-store-data-blob?view=iotedge-2018-06
+
+
+
 # 4. Architecture "Cloud"
 Deep dive technique cloud
 
