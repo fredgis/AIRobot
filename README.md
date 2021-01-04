@@ -1,4 +1,4 @@
-> **Notes:** Cet article est un mixte entre hands on et hackaton, nous espérons qu'il vous donnera une meilleur vision des possiblités industrielles de telles approches :)
+> **Notes:** Cet article est un mixte entre hands on et hackaton, nous espérons qu'il vous donnera une meilleure vision des possiblités industrielles de telles approches :)
 
 # 1. Architecture introduction
 Imaginez un monde où les robots (dixit robots industriels) effecturais eux-mêmes un diagnostique de leur état de santé et demanderai eux-mêmes une intervention de maintenance.
@@ -132,9 +132,7 @@ Cette application est développée en "low code" depuis le service Microsoft Pow
 ![](/Pictures/Archi%20bulletsShort.png?raw=true)
 
 # 3. Architecture "at the edge"
-
 ## Définition
-
 ### Réseau
 #### Virtual networks, peering et network security groups
 Les robots équipés de leur capteurs ainsi que la gateway Azure IoT Edge sont situés dans le réseau privé de l'entreprise.
@@ -195,7 +193,6 @@ Par simplicité, seul le modèle `deployment.json` peut être utilisé en lui fo
 Tous les modèles sont disponibles dans le répertoire [ARM Templates](/ARM%20Templates) de ce repo.
 
 ### Déploiement (via Azure CLI)
-
 Se loguer à Azure
 ```Shell
 az login
@@ -381,8 +378,6 @@ https://docs.microsoft.com/en-us/azure/iot-edge/how-to-store-data-blob?view=iote
 
 
 # 4. Architecture "Cloud"
-Deep dive technique cloud
-
 ### Modèle de Machine Learning / Deep Learning pour la detection d'anomalie 
 
 Cette article présente l'algortihme de machine learning / deep learning utilisé pour détecter les anomalies des robots de la flotte.
@@ -397,11 +392,15 @@ Nous aborderons dans la suite le modèle que nous avons choisi pour détecter le
 Pour faire de la détection d'anomalie, nous avons à notre disposition plusieurs algorithmes. 
 En plus des approches classiques de classification ou de clustering, des algortihmes spécifiques à la détection d'anomalie comme le One-Class SVM ou l'Isolation Forest peuvent s'avérer efficace. 
 
-Des méthodes statistiques telles que ARIMA permettent également de faire de la détection d'anomalie (sur des séries temporelles). Dans notre étude, à la vue des données dont nous disposons et des résultats que nous souhaitons obtenir, nous réalisons un autoencodeur lstm. Cette approche est différente des algorithmes de détection d'anomalie classique. Mais elle offre plusieurs avantages. 
+Des méthodes statistiques telles que ARIMA permettent également de faire de la détection d'anomalie (sur des séries temporelles). 
+
+Dans notre étude, à la vue des données dont nous disposons et des résultats que nous souhaitons obtenir, nous réalisons un autoencodeur lstm. Cette approche est différente des algorithmes de détection d'anomalie classique. Mais elle offre plusieurs avantages. 
 D'abord, c'est un algorithme de séries temporelles permettant de prendre en compte l'évolution des capteurs au cours du temps pour détecter une anomalie. 
 Ensuite, la base de données doit seulement comporter des données sur le fonctionnement nominal du robot. 
 
-Le modèle dira s'il est dans un état nominal ou s'il y a une anomalie. Il sera alors possible de détecter n'importe quel type d'anomalie (contrairement aux algorithmes ci-dessus qui détecteront les anomalies présentes dans la base de données d'entrainement). Par conséquent, la base n'a pas besoin d'être annotée ni de comporter un historique des pannes. C'est une approche plus générale d'un problème de maintenance prédictive.
+Le modèle dira s'il est dans un état nominal ou s'il y a une anomalie. Il sera alors possible de détecter n'importe quel type d'anomalie (contrairement aux algorithmes ci-dessus qui détecteront les anomalies présentes dans la base de données d'entrainement). Par conséquent, la base n'a pas besoin d'être annotée ni de comporter un historique des pannes. 
+
+C'est une approche plus générale d'un problème de maintenance prédictive.
 
 #### Préparation des données :
 Notre dataset comporte quatre features décrivant la vitesse de perçage, la température de perçage, le frottement du forêt et la température de l'eau de refroidissement de nos robots au cours du temps. 
@@ -446,7 +445,9 @@ Un autoencodeur doit reconstruire l'entrée qui lui est fournie en passant d'abo
 C'est un modèle de type séquentiel avec deux couches cachées pour l'encodeur et le décodeur. On ajoute en premier lieu une couche de type LSTM avec 180 neurones puis une seconde couche LSTM de 120 neurones. Ces deux couches constituent la partie encodage de l'autoencodeur. 
 
 La fonction RepeatVector réalise la transition entre la partie encodage et décodage. Elle transforme les données de dimension 2 qu'elle reçoit en entrée en 3 dimensions. Ensuite, on a la partie décodage avec deux layers LSTM de 120 et 180 neurones par symétrie avec l'encodage (par définition de l'autoencodeur). 
+
 Enfin, on a une dernière couche qui permet de transformer l'entrée reçue de dimension 3 (Nb de séries, 60, Nombre de neurones de la couche (180)) en une entrée de dimension 3 (Nb de séries, 60, 4) correspondant à l'entrée de l'algorithme. 
+
 On retrouve donc bien l'entrée de l'algorithme après avoir fait passer les données dans différentes couches, ce qui définit le principe de l'autoencodeur. Le dropout sert à prevenir l'overfitting.
 Il ne reste plus qu'à compiler le modèle puis à l'entrainer. On utilise l'optimisateur Adam car il offre les meilleurs résultats ainsi que la fonction de coût mean_absolute_error, on y reviendra dans une prochaine section.
 
