@@ -350,7 +350,8 @@ Dans la section `IoT Edge`, cliquer sur le device `AIRobotEdge`, et vérifier po
 - [Installation runtime IoT Edge](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge?view=iotedge-2018-06&tabs=linux);
 - [Configuration IoT Edge avec clé symétrique](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-manual-provision-symmetric-key?view=iotedge-2018-06&tabs=azure-portal%2Clinux);
 - [Déploiement de Azure SQL Edge](https://docs.microsoft.com/en-us/azure/azure-sql-edge/deploy-portal);
-- [Déploiement de Azure Blob Storage on IoT Edge](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-deploy-blob?view=iotedge-2018-06).
+- [Déploiement de Azure Blob Storage on IoT Edge](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-deploy-blob?view=iotedge-2018-06);
+- [Store data at the edge with Azure Blob Storage on IoT Edge](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-store-data-blob?view=iotedge-2018-06).
 
 ### Azure IoT Edge as Transparent Gateway
 Pour que nos robots dans leur réseau privé puissent communiquer avec notre gateway IoT Edge et lui envoyer leur télémétrie, nous devons configurer la gateway en mode "Transparent Gateway".
@@ -517,8 +518,9 @@ Le simulateur devrait être connecté au Edge Hub de la gateway et envoyer des m
 - [How to connect downstream device](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-connect-downstream-device?view=iotedge-2018-06)
 
 ## Configuration du module SQL Edge
-### Déploiement de la base de donées
-### Création du streaming job
+### Déploiement de la base de données
+### Création du Streaming Job
+
 ### Déploiement du modèle ONNX dans SQLEdge
 https://docs.microsoft.com/fr-fr/azure/azure-sql-edge/deploy-onnx
 
@@ -527,11 +529,6 @@ https://docs.microsoft.com/fr-fr/azure/azure-sql-edge/deploy-onnx
 - Pulling des tables de prédictions
 - Dépôt sur le stockage edge de l'export
 ### Configuration du pulling (cron 0 * * * *)
-
-## Configuration de la synchronisation du storage account avec le cloud
-
-
-https://docs.microsoft.com/en-us/azure/iot-edge/how-to-store-data-blob?view=iotedge-2018-06
 
 
 
