@@ -7,6 +7,7 @@ using System.Text;
 using Newtonsoft.Json;
 using System.IO;
 using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
 
 namespace RobotSimulator
 {
@@ -26,9 +27,12 @@ namespace RobotSimulator
             };
 
             Logger.LogInfo("Loading configuration.");
-
             var configuration = BuildConfiguration();
             var connectionString = GetConnectionString(configuration);
+
+            Logger.LogInfo("Installing client certificate.");
+            InstallCACert(configuration.GetSection("CACertificatePath").Value);
+
             var client = DeviceClient.CreateFromConnectionString(connectionString);
             client.OperationTimeoutInMilliseconds = GetIoTHubTimeout(configuration) * 1000;
 
@@ -84,10 +88,40 @@ namespace RobotSimulator
             Logger.LogInfo("Closing.");
         }
 
+        private static void InstallCACert(string trustedCACertPath)
+        {
+            if (!string.IsNullOrWhiteSpace(trustedCACertPath))
+            {
+                Logger.LogInfo($"User configured CA certificate path: {trustedCACertPath}");
+
+                if (!File.Exists(trustedCACertPath))
+                {
+                    // cannot proceed further without a proper cert file
+                    Logger.LogInfo($"Certificate file not found: {trustedCACertPath}");
+                    throw new InvalidOperationException("Invalid certificate file.");
+                }
+                else
+                {
+                    Logger.LogInfo($"Attempting to install CA certificate: {trustedCACertPath}");
+
+                    X509Store store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+                    store.Open(OpenFlags.ReadWrite);
+                    store.Add(new X509Certificate2(X509Certificate.CreateFromCertFile(trustedCACertPath)));
+
+                    Logger.LogInfo($"Successfully added certificate: {trustedCACertPath}");
+                    store.Close();
+                }
+            }
+            else
+            {
+                Logger.LogInfo("CA_CERTIFICATE_PATH was not set or null, not installing any CA certificate");
+            }
+        }
+
         private static IConfigurationRoot BuildConfiguration()
         {
             using var processModule = Process.GetCurrentProcess().MainModule;
-            
+
             var configurationBuilder = new ConfigurationBuilder()
                 .SetBasePath(Path.GetDirectoryName(processModule?.FileName))
                 .AddJsonFile("appsettings.json", false, false);
