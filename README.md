@@ -360,6 +360,7 @@ Se connecter à la VM gateway IoT Edge via le service `Azure Bastion` ou autre.
 
 Un certificat `root`, puis un certificat propre à la gateway `IoT Edge` et sa clé privé doivent être générés. Bien entendu, en production ces certificats doivent être générés via votre propre authorité de certification.
 Dans cet article, nous allons générer des certificats auto-signés en suivant la procédure suivante:
+
 [https://docs.microsoft.com/en-us/azure/iot-edge/how-to-create-transparent-gateway?view=iotedge-2018-06#set-up-the-device-ca-certificate](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-create-transparent-gateway?view=iotedge-2018-06#set-up-the-device-ca-certificate)
 
 Une fois la génération des certificats terminée, vous devriez être en possession de:
@@ -371,7 +372,7 @@ Une fois la génération des certificats terminée, vous devriez être en posses
 
 >**Notes:** Par simplicité, ces certificats sont à disposition dans le répertoire `Certificates` de ce repo. Néanmoins, étant valables 30 jours, il est possible qu'ils soient expirés au moment de votre lecture.
 
-Copier ces certificats sur la VM simulant notre gateway IoT Edge.
+Copier ces certificats sur la VM simulant la gateway IoT Edge.
 
 Editer le fichier de config YAML de IoT Edge.
 ```Shell
@@ -398,7 +399,7 @@ hostname: "edge.corporate.lan"
 ```
 
 >**Notes:** Il est important que la valeur de ce paramètre soit `edge.corporate.lan` car c'est cette valeur qui sera utilisée dans la chaîne de connection des robots à la gateway IoT Edge. Si ces deux valeurs sont différentes, une erreur de connexion se produira.
-Il est possible de spécifier une valeur différente de `edge.corporate.lan` afin de reflêter votre déploiement, en prenant soin de bien utiliser cette même dans la chaîne de connexion des robots.
+Il est possible de spécifier une valeur différente de `edge.corporate.lan` afin de reflêter votre déploiement, en prenant soin de bien utiliser cette même valeur dans la chaîne de connexion des robots.
 
 Sauvegarder les modifications puis redémarrer le service `IoT Edge`.
 
