@@ -483,7 +483,7 @@ sudo chmod +x /usr/sbin/RobotSimulator
 
 Copier le fichier `robotsimulator.service` dans `/etc/systemd/system/`.
 
-Redémarrer le daemon systemd pour prendre en compte le nouveau service ``.
+Redémarrer le daemon systemd pour prendre en compte le nouveau service `robotsimulator.service`.
 ```Shell
 sudo systemctl daemon-reload
 ```
