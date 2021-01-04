@@ -476,7 +476,19 @@ La logique étant qu'à la réception du flag (fichier) synchronisé depuis le A
 - [Gestion du consortium via PowerShell](https://docs.microsoft.com/fr-fr/azure/blockchain/service/manage-consortium-powershell);
 - [Création d'une interface d'appel avec Azure Logic Apps](https://docs.microsoft.com/fr-fr/azure/blockchain/service/ethereum-logic-app).
 
-### Routage de l'informationd e transaction validée sur un event grid (Blockchain Data Manager)
+### Routage de l'information de transaction validée sur un event grid
+
+Une fois l'information validée dans la blockchain il est nécessaire de router cette information, tout du moins de notifier les systèmes sous jacents de cette validation pour déclencher des actions dans d'autres systèmes.
+Cette étape est par exemple réalisable vie le service Azure Blockchain Data Manager qui permet de router l'information de validation sur par exemple un Azure Event Grid.
+
+Blockchain Data Manager capture, transforme et fournit des données de transaction Azure Blockchain Service aux rubriques Azure Event Grid proposant une intégration de registre blockchain évolutive et fiable aux services Azure.
+
+Le principe est donc de s'abonner à un smart contract et à la validation d'une transaction un message / notificztion est postée sur le service Azure Event Grid.
+![](/Pictures/AzureBlockchainDataManager.jpg?raw=true)
+
+#### Procédures complètes pour référence:
+- [Utiliser Blockchain Data Manager pour envoyer des données à Azure Cosmos DB](https://docs.microsoft.com/fr-fr/azure/blockchain/service/data-manager-cosmosdb);
+
 
 ### Création de la CosmosDB et interaction avec Azure Function et Event Grid
 
