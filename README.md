@@ -421,6 +421,98 @@ Néanmoins, cela n'est toujours pas possible. Dans ce cas, la gateway IoT Edge d
 - [Configuration Translation Gateway](https://docs.microsoft.com/en-us/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2018-06)
 
 ## Déploiement du simulateur des mesures du robot
+### Configuration Azure IoT Hub
+Dans cet article, un robot du réseau privé d'entreprise est simulé par une VM sur laquelle un programme .NET Core est déployé qui simule et envoie des mesures télémétriques à la gateway IoT Edge.
+
+Chaque robot doit être déclaré au préalable dans le service Azure IoT Hub.
+
+Cet article simule un unique robot. Nous allons le déclarer dans Azure IoT Hub et récupérer sa chaîne de connexion depuis Azure CLI.
+
+Depuis le shell de votre choix, se loguer à Azure.
+
+```Shell
+az login
+```
+
+Déclarer le device `AIRobot1`, enfant de la gateway IoT Edge `AIRobotEdge` configurée précédemment.
+
+```Shell
+az iot hub device-identity create -n <IOT_HUB_NAME> -d AIRobot1 --pd AIRobotEdge
+```
+
+Récupérer sa chaîche de connexion et la noter.
+
+```Shell
+az iot hub device-identity connection-string show --device-id AIRobot1 --hub-name <IOT_HUB_NAME>
+```
+
+Le résultat obtenu doit être de la forme:
+```JSON
+{
+  "ConnectionString": "HostName=<IOT_HUB_NAME>.azure-devices.net;DeviceId=AIRobot1;SharedAccessKey=<ACCESS_KEY>"
+}
+```
+
+Noter cette chaîne de connexion et lui ajouter `;GatewayHostName=edge.corporate.lan` de façon à obtenir une chaîne de la forme:
+
+`
+HostName=<IOT_HUB_NAME>.azure-devices.net;DeviceId=AIRobot1;SharedAccessKey=<ACCESS_KEY>;GatewayHostName=edge.corporate.lan
+`
+
+#### Procédures complètes pour référence:
+- [Downstream Devices Authentication](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-authenticate-downstream-device?view=iotedge-2018-06)
+
+### Déploiement du simulateur
+Cet article simule les mesures d'un robot via un programme .NET Core dont les sources sont disponibles dans le répertoire [Src/RobotSimulator](/Src/RobotSimulator) dans ce repos.
+
+Par simplicité, une build stand-alone pour Linux x64 est utilisable et disponible directement dans le répertoire [Builds/Linux](/Builds/Linux). Elle ne nécessite pas le déploiement préalable du runtime .NET Core sur la VM "Robot".
+
+Se connecter à la VM `Robot1` via le service Azure Bastion ou autre méthode de votre choix.
+
+Copier l'exécutable `RobotSimulator` et son fichier de configuration `appsettings.json`.
+
+>**Notes:** Suivant la méthode utilisée pour se connecter à la VM, l'ouverture des ports tels que 22 (entrant), 80 et 443 (sortant) peut être requise **temporairement** au niveau des règles du Network Security Group `nsg-vnet-airobot-private`.
+
+Rendre le fichier `RobotSimulator` exécutable
+
+```Shell
+sudo chmod +x RobotSimulator
+```
+
+Editer le fichier `appsettings.json`.
+```Shell
+sudo nano appsettings.json
+```
+
+Remplacer `<IOT HUB CONNECTION STRING>` par la chaîne de connexion du device `AIRobot1` récupérée précedemment sans oublier d'y ajouter l'attribut `;GatewayHostName=edge.corporate.lan` de façon à obtenir un résultat similaire à:
+
+```JSON
+{
+    "EdgeHubConnectionString": "HostName=<IOT_HUB_NAME>.azure-devices.net;DeviceId=AIRobot1;SharedAccessKey=<ACCESS_KEY>;GatewayHostName=edge.corporate.lan",
+    "IoTHubTimeoutInSec": 30
+}
+```
+
+Sauvegarder les modifications apporter au fichier `appsettings.json`.
+
+Copier le certificat CA root `azure-iot-test-only.root.ca.cert.pem` généré précédemment sur la VM.
+
+Installer le certificat dans les certificats de l'OS:
+```Shell
+sudo cp azure-iot-test-only.root.ca.cert.pem /usr/local/share/ca-certificates/azure-iot-test-only.root.ca.cert.pem.crt
+
+sudo update-ca-certificates
+```
+
+Lancer le simulateur:
+```Shell
+./RobotSimulator
+```
+
+Le simulateur devrait être connecté au Edge Hub de la gateway et envoyer des messages.
+
+#### Procédures complètes pour référence:
+- [How to connect downstream device](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-connect-downstream-device?view=iotedge-2018-06)
 
 ## Configuration du module SQL Edge
 ### Déploiement de la base de donées
