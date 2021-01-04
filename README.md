@@ -472,19 +472,26 @@ Par simplicité, une build stand-alone pour Linux x64 est utilisable et disponib
 
 Se connecter à la VM `Robot1` via le service Azure Bastion ou autre méthode de votre choix.
 
-Copier l'exécutable `RobotSimulator` et son fichier de configuration `appsettings.json`.
+>**Notes:** Suivant la méthode utilisée pour se connecter à la VM, l'ouverture des ports tels que 22 (entrant), 80 et 443 (sortant) peut être requise **temporairement** au niveau des règles du Network Security Group `nsg-vnet-airobot-private` afin de pouvoir copier / récupérer les différents fichiers et exécutables.
 
->**Notes:** Suivant la méthode utilisée pour se connecter à la VM, l'ouverture des ports tels que 22 (entrant), 80 et 443 (sortant) peut être requise **temporairement** au niveau des règles du Network Security Group `nsg-vnet-airobot-private`.
+Copier l'exécutable `RobotSimulator` et son fichier de configuration `appsettings.json` dans `/usr/sbin/`.
 
-Rendre le fichier `RobotSimulator` exécutable
+Rendre le fichier `/usr/sbin/RobotSimulator` exécutable
 
 ```Shell
-sudo chmod +x RobotSimulator
+sudo chmod +x /usr/sbin/RobotSimulator
 ```
 
-Editer le fichier `appsettings.json`.
+Copier le fichier `robotsimulator.service` dans `/etc/systemd/system/`.
+
+Redémarrer le daemon systemd pour prendre en compte le nouveau service ``.
 ```Shell
-sudo nano appsettings.json
+sudo systemctl daemon-reload
+```
+
+Editer le fichier `/usr/sbin/appsettings.json`.
+```Shell
+sudo nano /usr/sbin/appsettings.json
 ```
 
 Remplacer `<IOT HUB CONNECTION STRING>` par la chaîne de connexion du device `AIRobot1` récupérée précedemment sans oublier d'y ajouter l'attribut `;GatewayHostName=edge.corporate.lan` de façon à obtenir un résultat similaire à:
@@ -496,7 +503,7 @@ Remplacer `<IOT HUB CONNECTION STRING>` par la chaîne de connexion du device `A
 }
 ```
 
-Sauvegarder les modifications apporter au fichier `appsettings.json`.
+Sauvegarder les modifications apporter au fichier `/usr/sbin/appsettings.json`.
 
 Copier le certificat CA root `azure-iot-test-only.root.ca.cert.pem` généré précédemment sur la VM.
 
@@ -509,10 +516,14 @@ sudo update-ca-certificates
 
 Lancer le simulateur:
 ```Shell
-./RobotSimulator
+sudo systemctl start robotsimulator.service
+sudo systemctl enable robotsimulator.service
 ```
 
-Le simulateur devrait être connecté au Edge Hub de la gateway et envoyer des messages.
+Vérifier que le simulateur est bien connecté au Edge Hub et envoie bien la télémétrie:
+```Shell
+sudo systemctl status robotsimulator.service
+```
 
 #### Procédures complètes pour référence:
 - [How to connect downstream device](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-connect-downstream-device?view=iotedge-2018-06)
