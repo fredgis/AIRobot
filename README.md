@@ -578,10 +578,6 @@ Le document écrit dans la base de donnée est alors du type :
 - [Azure Cosmos DB serverless (préversion)](https://docs.microsoft.com/fr-fr/azure/cosmos-db/serverless);
 - [Utiliser Blockchain Data Manager pour envoyer des données à Azure Cosmos DB](https://docs.microsoft.com/fr-fr/azure/blockchain/service/data-manager-cosmosdb);
 
-
-### Interconnexion avec ERP
-
 ### Création de la PowerApps de maintenance
-
-
-
+Et bien nous laissons dans cette partie libre cours à votre imagination :)
+Un excellent point d'entrée pour créer une application de bout en bout : [Créer ou modifier une application à l’aide du concepteur d’application](https://docs.microsoft.com/fr-fr/dynamics365/customerengagement/on-premises/customize/create-edit-app)
