@@ -1,28 +1,29 @@
 > **Notes:** Cet article est un mixte entre hands on et hackaton, nous espérons qu'il vous donnera une meilleure vision des possiblités industrielles de telles approches :)
 
 # 1. Architecture introduction
-Imaginez un monde où les robots (dixit robots industriels) effecturais eux-mêmes un diagnostique de leur état de santé et demanderai eux-mêmes une intervention de maintenance.
+Imaginez un monde où les robots (dixit robots industriels) effecturaient eux-mêmes un diagnostique de leur état de santé et demanderaient eux-mêmes une intervention de maintenance.
 
-Cette approche, utopique il y a quelques années, s'avère bien plus réaliste aujourd'hui grâce aux "nouvelles technologies" et plus précisément services cloud.  En effet, les services "At the Edge", de "Machine Learning", de "Blockchain" et globalement d'infrastructure cloud permettent de s'approcher de telles réalisations.
+Cette approche, utopique il y a quelques années, s'avère bien plus réaliste aujourd'hui grâce aux "nouvelles technologies" et plus précisément aux services cloud. En effet, les services "At the Edge", de "Machine Learning", de "Blockchain" et globalement d'infrastructure cloud permettent de s'approcher de telles réalisations.
 
-Nous allons parcourir au gré de cet article les aspects suivants qui permettent la mise en place d'une telle approche:
+Nous allons parcourir au gré de cet article les aspects qui permettent la mise en place d'une telle approche:
 - Déploiement d'un ensemble de services du cloud Azure @Edge
 - Intégration d'un modèle de machine learning pour des prises de décisions "intelligentes"
 - Remontée de ces informations dans le cloud
 - Prise de décision déléguée au travers de services de Blockchain
 - Planification automatique d'actes de maintenance de part l'intégration des décisions sur des applications low code (PowerApps)
 
-L'idée globale du projet est donc la remontée de données depuis plusieurs capteurs d'un robot industriel sur une gateway @Edge qui, via un algorithme de machine learning embarqué, prendra la décision de remonter une future défaillance du système.
+L'idée globale du projet est donc la remontée des données depuis plusieurs capteurs d'un robot industriel sur une gateway @Edge qui, via un algorithme de machine learning embarqué, prendra la décision de remonter une future défaillance du système.
 
-Nous parlons ici d'une défaillance non prédictible et non liée à une seule remontée de capteur. En effet, beaucoup de robots industriels embarquent désormais leurs propres algorithmes et recueil de données afin d'anticiper une panne sur une pièce et ainsi alerter les opérateurs en amont.
+Nous parlons ici d'une défaillance non prédictible et non liée à une seule remontée de capteur. En effet, beaucoup de robots industriels embarquent désormais leurs propres algorithmes et recueils de données afin d'anticiper une panne sur une pièce et ainsi alerter les opérateurs en amont.
 
-La mise en place d'une telle architecture va permettre de croiser les remontées de différents capteurs afin d'identifier un fonctionnement anormal du robot dans le temps, une dérive et globalement anticiper un disfonctionnement global très en amont de défaillances unitaires. 
+La mise en place d'une telle architecture va permettre de croiser les remontées de différents capteurs afin d'identifier un fonctionnement anormal du robot dans le temps, une dérive et globalement anticiper un dysfonctionnement global très en amont des défaillances unitaires. 
+
 C'est donc une approche globale sur de multiples capteurs non superviser qui visera une prise de décision sur une intervention / commande de matériel.
 
 La remontée des informations se fait @Edge depuis un service Azure IOT Hub déployé @Edge. 
 Les données sont ensuite routées dans une base Azure SQL Edge afin de les stocker. 
 
-Un modèle de machine learning embarqué dans la base Azure SQL Edge (format ONNX) permet, sur une période définie (dans notre étude toutes les heures), d'analyser les envois des différents capteurs afin de détecter ou non un futur disfonctionnement.
+Un modèle de machine learning embarqué dans la base Azure SQL Edge (format ONNX) permet, sur une période définie (dans notre étude toutes les heures), d'analyser les envois des différents capteurs afin de détecter ou non un futur dysfonctionnement.
 
 Imaginez un robot de découpe qui envoi un certain nombre d'informations
 - Vitesse de rotation
@@ -31,35 +32,36 @@ Imaginez un robot de découpe qui envoi un certain nombre d'informations
 - Bruit émis par la machine en phase de coupe
 - etc.
 
-Tous ces capteurs remontent des informations dans la base Azure SQL Edge qui seront traitées par un modèle de machine learning (préalablement entrainé via un service tel que Azure Machine Learning Services). Si le modèle détecte une future interruption de service alors les données qui lui ont permis de modéliser cet état sont déposées sous la forme d'un fichier dans un Azure Storage déployé @Edge.
+Tous ces capteurs remontent des informations dans la base Azure SQL Edge qui seront traitées par un modèle de machine learning (préalablement entrainé via un service tel que Azure Machine Learning Service). 
+Si le modèle détecte une future interruption de service alors les données qui lui ont permis de modéliser cet état sont déposées sous la forme d'un fichier dans un Azure Storage déployé @Edge.
 
 A partir du moment où le modèle détecte une dérive un ordre de maintenance doit être créé. 
-Les données déposées dans le stockage @Edge sont alors automatiquement synchronisées sur un Azure Storage dans le cloud afin d'y être traitée.
+Les données déposées dans le stockage @Edge sont alors automatiquement synchronisées sur un Azure Storage dans le cloud afin d'y être traitées.
 
 Cette "décision" en mode autonome du robot d'établir un ordre de maintenance ou ordre de commande doit être validée et pour ne pas briser cette chaîne de décision automatique celle-ci va être déléguée à une architecture blockchain de type POA (Proof of Authority).
 
-Cette architecture construite dans le cloud Azure en utilisant le service Azure Blockchain Services (sur protocole Ethereum/Quorum) ou via Azure AKS (Hyperledger) va donc devoir valider la demande provenant du "field", donc une décision prise en autonomie par le robot (et plus précisément la gateway qui lui est liée).
+Cette architecture construite dans le cloud Azure en utilisant le service Azure Blockchain Service (sur protocole Ethereum/Quorum) ou via Azure AKS (Hyperledger) va donc devoir valider la demande provenant du "field", donc une décision prise en autonomie par le robot (et plus précisément la gateway qui lui est liée).
 
 L'architecture blockchain est de type Quorum (POA) sur un algorithme de consensus qui oblige l'approbation de la transaction par plusieurs acteurs afin que celle-ci soit validée.
 Cette approche est très efficace car ne demande pas beaucoup de ressources afin de valider la transaction.
 
 Dans notre cas le consensus pourrai être:
-- Noeud de consensus de l'usine héberfeant le robot
+- Noeud de consensus de l'usine hébergeant le robot
 - Noeud de consensus du fabricant du robot
-- Noeud de consensus de l'authorité de sécurité du robot
+- Noeud de consensus de l'autorité de sécurité du robot
 - etc.
 
 Toutes ces autorités participent à la validation de la transaction d'ordre de maintenance et ont toutes validées un contrat "Smart contract" qui valide un certain nombre de règles lorsqu'une transaction est fournit en entrée de celui-ci.
 
 Les différentes autorités ont un trust sur ce contrat, s'il s'avère exacte et donc que la transaction présentée (sous jacente de la remonté du modèle ML) est validée par chacun des noeuds composant le consensus alors la transaction est validée et écrite dans la blockchain. 
 
-On trace donc non seulement le fait que cette transaction (image numéroque de l'ordre de maitenance) est valide mais on y adjoint l'ensemble du dataset qui a permis de prendre cette décision (pour potentiellement des besoins d'audit par un tiers).
+On trace donc non seulement le fait que cette transaction (image numérique de l'ordre de maitenance) est valide mais on y adjoint l'ensemble du dataset qui a permis de prendre cette décision (pour potentiellement des besoins d'audit par un tiers).
 Cette blockchain déployée est une blockchain privée, sécurisée, reposant sur du POA et donc sans interaction publique.
 
-Dès que cette transaction est validée le service pousse une notification sur un Azure Grid qui permet de broadcaster à plusieurs services l'information.
+Dès que cette transaction est validée le service pousse une notification sur un service Azure Event Grid qui permet de broadcaster à plusieurs services l'information.
 
 Dans notre cas nous ferons les actions suivantes:
-- Déclenchement d'une commande dans un ERP d'entreprise (Dynamics 365 !)
+- Déclenchement d'une commande dans un ERP d'entreprise (D365 !)
 - Ecriture de l'ordre de maintenance dans une base NoSQL (Azure CosmosDB)
 - Mise à disposition et notification de l'acteur de maintenance via une application terrain (PowerApps)
 
@@ -68,7 +70,7 @@ Le schéma d'architecture ci-après présente l'approche globable d'architecture
 
 # 2. Architecture détaillée
 Il est maintenant temps de voir comment doit s'implémenter finement cette approche :)
-Le schéma ci-après présente l'approche détaillée, chacun des bloc fera l'objet d'un chapitre vous présentant comment l'implémenter.
+Le schéma ci-après présente l'approche détaillée, chacun des blocs fera l'objet d'un chapitre vous présentant comment l'implémenter.
 
 L'architecture est découpée en plusieurs blocs distincts qui dialoguent entre eux ou via des messages (évènements sur un bus de données), ou via flag (fichier dans un container).
 ![](/Pictures/iRobotArchitecture-DEEP%20ARCHITECTURE$.png?raw=true)
