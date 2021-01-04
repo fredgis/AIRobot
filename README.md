@@ -476,13 +476,108 @@ La logique étant qu'à la réception du flag (fichier) synchronisé depuis le A
 - [Gestion du consortium via PowerShell](https://docs.microsoft.com/fr-fr/azure/blockchain/service/manage-consortium-powershell);
 - [Création d'une interface d'appel avec Azure Logic Apps](https://docs.microsoft.com/fr-fr/azure/blockchain/service/ethereum-logic-app).
 
-### Routage de l'informationd e transaction validée sur un event grid (Blockchain Data Manager)
+### Routage de l'information de transaction validée sur un event grid
+
+Une fois l'information validée dans la blockchain il est nécessaire de router cette information, tout du moins de notifier les systèmes sous jacents de cette validation pour déclencher des actions dans d'autres systèmes.
+Cette étape est par exemple réalisable vie le service Azure Blockchain Data Manager qui permet de router l'information de validation sur par exemple un Azure Event Grid.
+
+Blockchain Data Manager capture, transforme et fournit des données de transaction Azure Blockchain Service aux rubriques Azure Event Grid proposant une intégration de registre blockchain évolutive et fiable aux services Azure.
+
+Le principe est donc de s'abonner à un smart contract et à la validation d'une transaction un message / notificztion est postée sur le service Azure Event Grid.
+![](/Pictures/AzureBlockchainDataManager.jpg?raw=true)
+
+Une instance de Blockchain Data Manager surveille un nœud de transaction Azure Blockchain Service. Une instance capture toutes les données de bloc brut et de transaction brute à partir du nœud de transaction. Blockchain Data Manager publie un message RawBlockAndTransactionMsg qui est un sur-ensemble des informations retournées par les requêtes web3.eth [getBlock](https://web3js.readthedocs.io/en/v1.2.0/web3-eth.html#getblock) et [getTransaction](https://web3js.readthedocs.io/en/v1.2.0/web3-eth.html#gettransaction).
+
+Dans notre cas il s'agira de créer une entrée sur le cluster Blockchain préalablement créé.
+
+```Shell
+az resource create \
+                   --resource-group <Resource group> \
+                   --name <Input name> \
+                   --namespace Microsoft.Blockchain \
+                   --resource-type inputs \
+                   --parent watchers/<Watcher name> \
+                   --is-full-object \
+                   --properties <input resource properties>
+```
+
+Une fois la connexion en entrée créée il s'agit maintenant de créer une connexion de sprtie sur une rubrique d'un service Azure Event Grid.
+Une connexion sortante envoie des données blockchain à Azure Event Grid. Vous pouvez envoyer des données blockchain à une ou plusieurs destinations. Blockchain Data Manager prend en charge plusieurs connexions sortantes de rubrique Event Grid pour une instance de Data Manager Blockchain donnée.
+
+```Shell
+az resource create \
+                   --resource-group myRG \
+                   --name myoutput \
+                   --namespace Microsoft.Blockchain \
+                   --resource-type outputs \
+                   --parent watchers/mywatcher \
+                   --is-full-object \
+                   --properties '{"location":"eastus","properties":{"outputType":"EventGrid","dataSource":{"resourceId":"/subscriptions/<Subscription ID>/resourceGroups/<Resource group>/providers/Microsoft.EventGrid/topics/<event grid topic>"}}}'
+```
+
+La dernière étape consiste à ajouter l'application.
+Si vous ajoutez une application blockchain, Blockchain Data Manager décode l’état de l’événement et de la propriété pour l’application. Dans le cas contraire, seules les données de bloc brut et de transaction brute sont envoyées. Blockchain Data Manager détecte également les adresses de contrat lors du déploiement du contrat. Vous pouvez ajouter plusieurs applications blockchain à une instance Blockchain Data Manager.
+
+```Shell
+az resource create \
+                   --resource-group <Resource group> \
+                   --name <Application name> \
+                   --namespace Microsoft.Blockchain \
+                   --resource-type artifacts \
+                   --parent watchers/<Watcher name> \
+                   --is-full-object \
+                   --properties <Application resource properties>
+```
+
+Il est maintenant temps de démarrer l'instance.
+Lors de son exécution, une instance Blockchain Manager surveille les événements Blockchain à partir des entrées définies et envoie des données aux sorties définies.
+
+```Shell
+az resource invoke-action \
+                          --action start \
+                          --ids /subscriptions/<Subscription ID>/resourceGroups/<Resource group>/providers/Microsoft.Blockchain/watchers/<Watcher name>
+```
+
+#### Procédures complètes pour référence:
+- [Utiliser Blockchain Data Manager pour envoyer des données à Azure Cosmos DB](https://docs.microsoft.com/fr-fr/azure/blockchain/service/data-manager-cosmosdb);
+- [Configurer Data Manager](https://docs.microsoft.com/fr-fr/azure/blockchain/service/data-manager-cli);
 
 ### Création de la CosmosDB et interaction avec Azure Function et Event Grid
+Azure Cosmos DB serverless vous permet d’utiliser votre compte Azure Cosmos sur la base de la consommation ; dans ce cas, vous êtes facturé uniquement pour les unités de requête consommées par vos opérations de base de données et le stockage consommé par vos données. L’utilisation d’Azure Cosmos DB en mode serverless n’implique pas de frais minimum.
 
-### Interconnexion avec ERP
+Dans notre architecture la base de données NoSQL; Azure CosmosDB, pourrai être utilisée en mode complètement à la demande, celle-ci étant accédée uniquement lors d'un appel en consultation via l'application de maintenance ou quand une transaction a été validée dans la Blockchain, donc écrite comme ordre de maintenance.
+
+L'aritcle suivant vous permettra de mieux comprendre les différents modes et de faire le bon choix: [Comment choisir entre le mode débit approvisionné et le mode serverless](https://docs.microsoft.com/fr-fr/azure/cosmos-db/throughput-serverless).
+
+Les conteneurs serverless exposent les mêmes fonctionnalités que les conteneurs créés en mode de débit approvisionné, ce qui vous permet de lire, d’écrire et d’interroger vos données exactement de la même façon. Toutefois, les comptes et les conteneurs serverless ont également des caractéristiques spécifiques.
+
+L'approche de création est donc très standard :
+- Créer un compte Azure Cosmos
+- Ajouter ou supprimer des régions
+- Activer les écritures multirégions
+- Créer le coneneur associé à l'application.
+
+Toutes les informations de création :  [Gérer les ressources de l’API Azure Cosmos DB Core (SQL) à l’aide d’Azure CLI](https://docs.microsoft.com/fr-fr/azure/cosmos-db/manage-with-cli);
+
+Afin d'envoyer les informations depuis le service Azure Event Grid vers la base Azure CosmosDB nous pouvons utiliser une Azure Logicapps (ou une Azure Function).
+Celle-ci est configurée avec une connexion sur la grille d'évènement en entrée ainsi qu'une tâche de création de document en sortie.
+Cette fonction (Loicapps) sera donc appelée lors de chaque validation de transaction dans la blockchain. Rappelons que ces transactions correspondent à des évènements de maintenance, ce n'est donc en théorie que très peu transactionnel. Une architecture de bout en bout en serverless est donc à prisilégier.
+
+La Logicapps se présente comme suit:
+- Un trigger de type Microsoft.EventGrid.Topics sur la ressource considérée, dans notre cas "ledgergrid"
+- Une tâched de sortie pour créer le document ou faire une mise à jour.
+
+![](/Pictures/AzureBlockchainToCosmosDB.jpg?raw=true)
+
+Les propriétés ajoutées sont les suivantes : addProperty(triggerBody()?['data'], 'id', utcNow())
+Le document écrit dans la base de donnée est alors du type :
+
+![](/Pictures/AzureBlockchainToCosmosDBDocument.jpg?raw=true)
+
+#### Procédures complètes pour référence:
+- [Azure Cosmos DB serverless (préversion)](https://docs.microsoft.com/fr-fr/azure/cosmos-db/serverless);
+- [Utiliser Blockchain Data Manager pour envoyer des données à Azure Cosmos DB](https://docs.microsoft.com/fr-fr/azure/blockchain/service/data-manager-cosmosdb);
 
 ### Création de la PowerApps de maintenance
-
-
-
+Et bien nous laissons dans cette partie libre cours à votre imagination :)
+Un excellent point d'entrée pour créer une application de bout en bout : [Créer ou modifier une application à l’aide du concepteur d’application](https://docs.microsoft.com/fr-fr/dynamics365/customerengagement/on-premises/customize/create-edit-app)
