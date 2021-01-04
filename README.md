@@ -213,8 +213,6 @@ az deployment group create -n "AIRobotDeployment" --resource-group <RG_NAME> --t
 Une fois le déploiement terminé, vous devriez obtenir le résultat suivant:
 ![](/Pictures/DeploymentResults.jpg?raw=true)
 
-## Déploiement du simulateur des mesures du robot
-
 ## Configuration de la gateway Azure IoT Edge
 La gateway Azure Iot Edge est une machine (physique ou virtuelle) sur laquelle nous déployons les modules suivants:
 - Le runtime Azure IoT Edge;
@@ -355,10 +353,76 @@ Dans la section `IoT Edge`, cliquer sur le device `AIRobotEdge`, et vérifier po
 - [Déploiement de Azure Blob Storage on IoT Edge](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-deploy-blob?view=iotedge-2018-06).
 
 ### Azure IoT Edge as Transparent Gateway
+Pour que nos robots dans leur réseau privé puissent communiquer avec notre gateway IoT Edge et lui envoyer leur télémétrie, nous devons configurer la gateway en mode "Transparent Gateway".
 
-### Azure IoT Edge as Translation Gateway (si déploiement de SDK impossible, utilisation d'une translation Gateway (module de protocol et identity translation))
-https://docs.microsoft.com/en-us/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2018-06
+Les robots seront alors des "downstream devices" et enverrons leurs informations uniquement à la gateway. Quant à elle, elle acheminera les messages vers le service Azure IoT Hub dans Azure si connectivité, sinon gardera un historique des messages en mode "offline".
+Ce mode de fonctionnement permet également de réaliser des analyses directement en local "at the edge", comme notamment appeler notre modèle de Machine Learning de détection d'anomalies.
 
+Se connecter à la VM gateway IoT Edge via le service `Azure Bastion` ou autre.
+
+Un certificat `root`, puis un certificat propre à la gateway `IoT Edge` et sa clé privé doivent être générés. Bien entendu, en production ces certificats doivent être générés via votre propre authorité de certification.
+Dans cet article, nous allons générer des certificats auto-signés en suivant la procédure suivante:
+
+[https://docs.microsoft.com/en-us/azure/iot-edge/how-to-create-transparent-gateway?view=iotedge-2018-06#set-up-the-device-ca-certificate](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-create-transparent-gateway?view=iotedge-2018-06#set-up-the-device-ca-certificate)
+
+Une fois la génération des certificats terminée, vous devriez être en possession de:
+- Root CA certificat appellé `azure-iot-test-only.root.ca.cert.pem`;
+- Certficat CA de la gateway `iot-edge-device-ca-vm-airobot-edge-full-chain.cert.pem`;
+- Et de la clé privé associée `iot-edge-device-ca-vm-airobot-edge.key.pem`.
+
+>**Notes:** Le nom du certificat CA de la gateway dans cet exemple est `vm-airobot-edge` et peut être différent de celui que vous avez choisi.
+
+>**Notes:** Par simplicité, ces certificats sont à disposition dans le répertoire `Certificates` de ce repo. Néanmoins, étant valables 30 jours, il est possible qu'ils soient expirés au moment de votre lecture.
+
+Copier ces certificats sur la VM simulant la gateway IoT Edge.
+
+Editer le fichier de config YAML de IoT Edge.
+```Shell
+sudo nano /etc/iotedge/config.yaml
+```
+
+Chercher la section `Certificate settings`, puis la décommenter. Renseigner la locatlisation des certificats copiés sur la gateway IoT Edge pour chaque type demandé:
+- device_ca_cert: certificat de la gateway IoT Edge;
+- device_ca_pk: la clé privée associée;
+- trusted_ca_certs: certificat CA root.
+
+Vous devriez obtenir un résultat similaire à celui-ci:
+
+```YAML
+certificates:
+  device_ca_cert: "file:///home/crobin/certs/iot-edge-device-ca-vm-airobot-edge-full-chain.cert.pem"
+  device_ca_pk: "file:///home/crobin/certs/iot-edge-device-ca-vm-airobot-edge.key.pem"
+  trusted_ca_certs: "file:///home/crobin/certs/azure-iot-test-only.root.ca.cert.pem"
+```
+
+Editer également la valeur du paramètre `hostname` ainsi:
+```YAML
+hostname: "edge.corporate.lan"
+```
+
+>**Notes:** Il est important que la valeur de ce paramètre soit `edge.corporate.lan` car c'est cette valeur qui sera utilisée dans la chaîne de connection des robots à la gateway IoT Edge. Si ces deux valeurs sont différentes, une erreur de connexion se produira.
+Il est possible de spécifier une valeur différente de `edge.corporate.lan` afin de reflêter votre déploiement, en prenant soin de bien utiliser cette même valeur dans la chaîne de connexion des robots.
+
+Sauvegarder les modifications puis redémarrer le service `IoT Edge`.
+
+```Shell
+sudo systemctl restart iotedge
+```
+
+#### Procédures complètes pour référence:
+- [Configuration Transparent Gateway](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-create-transparent-gateway?view=iotedge-2018-06)
+
+### Azure IoT Edge comme Translation Gateway
+L'utilisation de la gateway IoT Edge comme Transparent Gateway nécessite que les robots, ou downstream devices, utilisent le SDK IoT Hub pour communiquer avec cette dernière.
+
+Néanmoins, cela n'est toujours pas possible. Dans ce cas, la gateway IoT Edge doit être configurée comme `Translation Gateway`. Des développements spécifiques sont à prévoir.
+
+>**Notes:** Dans le cadre de cet article, le simulateur de robot utilise le SDK IoT Hub.
+
+#### Procédures complètes pour référence:
+- [Configuration Translation Gateway](https://docs.microsoft.com/en-us/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2018-06)
+
+## Déploiement du simulateur des mesures du robot
 
 ## Configuration du module SQL Edge
 ### Déploiement de la base de donées
