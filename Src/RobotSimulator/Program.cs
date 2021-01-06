@@ -7,7 +7,6 @@ using System.Text;
 using Newtonsoft.Json;
 using System.IO;
 using System.Diagnostics;
-using System.Security.Cryptography.X509Certificates;
 
 namespace RobotSimulator
 {
@@ -56,7 +55,7 @@ namespace RobotSimulator
                     var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                     temporalVariation = temporalVariation % 100;
                     var drillingTemp = TelemetryGenerator.ComputeDrillingTemperature(temporalVariation);
-                    var drillBitFriction = TelemetryGenerator.ComputeDrillBitFriction(temporalVariation);
+                    var drillBitFriction = TelemetryGenerator.ComputeDrillBitFriction();
                     var drillingSpeed = TelemetryGenerator.ComputeDrillingSpeed(temporalVariation);
                     var liquidCoolingTemp = TelemetryGenerator.ComputeLiquidCoolingTemperature(temporalVariation);
 

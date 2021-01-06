@@ -15,9 +15,9 @@ namespace RobotSimulator
             return drillingBaseTemp + 2 * Math.Sin(temporalVariation) + random.Next(-4, 4) / 10;
         }
 
-        public static double ComputeDrillBitFriction(int temporalVariation)
+        public static double ComputeDrillBitFriction()
         {
-            return drillBitBaseFriction + random.Next(-1, 1) / 10;
+            return drillBitBaseFriction + (double)random.Next(-1, 1) / 10;
         }
 
         public static double ComputeDrillingSpeed(int temporalVariation)
