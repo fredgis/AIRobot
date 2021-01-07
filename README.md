@@ -1,16 +1,16 @@
-> **Notes:** Cet article est un mixte entre hands on et hackaton, nous espérons qu'il vous donnera une meilleure vision des possiblités industrielles de telles approches :)
+> **Notes:** Cet article est un mixte entre hands on et hackaton, nous espérons qu'il vous donnera une meilleure vision des possibilités industrielles de telles approches :)
 
 # 1. Architecture introduction
-Imaginez un monde où les robots (dixit robots industriels) effecturaient eux-mêmes un diagnostique de leur état de santé et demanderaient eux-mêmes une intervention de maintenance.
+Imaginez un monde où les robots (dixit robots industriels) effectuaient eux-mêmes un diagnostic de leur état de santé et demanderaient eux-mêmes une intervention de maintenance.
 
-Cette approche, utopique il y a quelques années, s'avère bien plus réaliste aujourd'hui grâce aux "nouvelles technologies" et plus précisément aux services cloud. En effet, les services "At the Edge", de "Machine Learning", de "Blockchain" et globalement d'infrastructure cloud permettent de s'approcher de telles réalisations.
+Cette approche, utopique il y a quelques années, s'avère bien plus réaliste aujourd'hui grâce aux "nouvelles technologies" et plus précisément aux services cloud. En effet, les services "At The Edge", de "Machine Learning", de "Blockchain" et globalement d'infrastructure cloud permettent de s'approcher de telles réalisations.
 
 Nous allons parcourir au gré de cet article les aspects qui permettent la mise en place d'une telle approche:
 - Déploiement d'un ensemble de services du cloud Azure @Edge
 - Intégration d'un modèle de machine learning pour des prises de décisions "intelligentes"
 - Remontée de ces informations dans le cloud
 - Prise de décision déléguée au travers de services de Blockchain
-- Planification automatique d'actes de maintenance de part l'intégration des décisions sur des applications low code (PowerApps)
+- Planification automatique d'actes de maintenance de par l'intégration des décisions sur des applications low code (PowerApps)
 
 L'idée globale du projet est donc la remontée des données depuis plusieurs capteurs d'un robot industriel sur une gateway @Edge qui, via un algorithme de machine learning embarqué, prendra la décision de remonter une future défaillance du système.
 
@@ -51,11 +51,11 @@ Dans notre cas le consensus pourrai être:
 - Noeud de consensus de l'autorité de sécurité du robot
 - etc.
 
-Toutes ces autorités participent à la validation de la transaction d'ordre de maintenance et ont toutes validées un contrat "Smart contract" qui valide un certain nombre de règles lorsqu'une transaction est fournit en entrée de celui-ci.
+Toutes ces autorités participent à la validation de la transaction d'ordre de maintenance et ont toutes validées un contrat "Smart contract" qui valide un certain nombre de règles lorsqu'une transaction est fourni en entrée de celui-ci.
 
-Les différentes autorités ont un trust sur ce contrat, s'il s'avère exacte et donc que la transaction présentée (sous jacente de la remonté du modèle ML) est validée par chacun des noeuds composant le consensus alors la transaction est validée et écrite dans la blockchain. 
+Les différentes autorités ont un trust sur ce contrat, s'il s'avère exacte et donc que la transaction présentée (sous-jacente de la remonté du modèle ML) est validée par chacun des noeuds composant le consensus alors la transaction est validée et écrite dans la blockchain. 
 
-On trace donc non seulement le fait que cette transaction (image numérique de l'ordre de maitenance) est valide mais on y adjoint l'ensemble du dataset qui a permis de prendre cette décision (pour potentiellement des besoins d'audit par un tiers).
+On trace donc non seulement le fait que cette transaction (image numérique de l'ordre de maintenance) est valide mais on y adjoint l'ensemble du dataset qui a permis de prendre cette décision (pour potentiellement des besoins d'audit par un tiers).
 Cette blockchain déployée est une blockchain privée, sécurisée, reposant sur du POA et donc sans interaction publique.
 
 Dès que cette transaction est validée le service pousse une notification sur un service Azure Event Grid qui permet de broadcaster à plusieurs services l'information.
@@ -75,7 +75,7 @@ Le schéma ci-après présente l'approche détaillée, chacun des blocs fera l'o
 L'architecture est découpée en plusieurs blocs distincts qui dialoguent entre eux ou via des messages (évènements sur un bus de données), ou via flag (fichier dans un container).
 ![](/Pictures/iRobotArchitecture-DEEP%20ARCHITECTURE$.png?raw=true)
 
-Nous pouvons résumer cette architecture en cinq blocs dinstincts:
+Nous pouvons résumer cette architecture en cinq blocs distincts:
 #### Bloc de services déployés @Edge (1)
 
 Les différents services Azure permettant la collecte de données depuis les capteurs positionnés sur le robot se feront directement sur une gateway associé au(x) robot(s) industriel(s).
@@ -86,19 +86,19 @@ Les services utilisés sont les suivants
 - Azure Blob Storage Edge;
 - Module personnalisé avec le runtime Azure Function.
 
-Deux tables seront modélisées, l'une permettant d'intégrer l'ensembles des évènements provenant des sources, l'aure permettant d'exposer les résultats du modèle de machine learning embarqué.
-L'intégration des données sera géré par le nouveau service de streaming contenu dans Azure SQL Edge. Ce service permet de créer des job de streaming permettant la capture temps réel d'évènement @edge et l'insertion directement en base de données.
+Deux tables seront modélisées, l'une permettant d'intégrer l'ensembles des évènements provenant des sources, l'autre permettant d'exposer les résultats du modèle de machine learning embarqué.
+L'intégration des données sera gérée par le nouveau service de streaming contenu dans Azure SQL Edge. Ce service permet de créer des jobs de streaming permettant la capture temps réel d'évènement @edge et l'insertion directement en base de données.
 
 #### Modèle de machine learning entrainé dans le cloud et déployé @edge (2)
 
-Le développement de la solution de machine learning utilise le service Azure Machine Learning. Une fois le modèle developpé, il est exporté sous ONNX. Open Neural Network Exchange est un moteur d'inférence haute performance, optimisé pour le cloud et les infrastructures at the edge. Le modèle utilisé est un autoencoder lstm (long short-term memory). Cette approche, basée sur les autoencodeurs et sur les réseaux de neurones récurrents, offre plusieurs avantages dans le cadre de la détection d'anomalie pour la flotte de robot :
+Le développement de la solution de machine learning utilise le service Azure Machine Learning. Une fois le modèle développé, il est exporté sous ONNX. Open Neural Network Exchange est un moteur d'inférence haute performance, optimisé pour le cloud et les infrastructures at the edge. Le modèle utilisé est un autoencoder lstm (long short-term memory). Cette approche, basée sur les auto encodeurs et sur les réseaux de neurones récurrents, offre plusieurs avantages dans le cadre de la détection d'anomalie pour la flotte de robot :
 
 * Algorithme pour la prévision de séries temporelles permettant de prendre en compte l'évolution des capteurs au cours du temps et non seulement l'état des capteurs à l'instant t.
 * Algorithme se basant sur le fonctionnement nominal des robots et qui sera capable de détecter n'importe quel type d'anomalie dans le futur. Il n'y a donc pas besoin d'une base de données d'entraînement comportant des anomalies. C'est un algorithme de type non supervisé.
 
-Plus précisemment, l'entrée de l'algorithme reçoit la valeur des capteurs lors de la dernière heure à différents instants. L'autoencodeur se compose en deux parties, la phase d'encodage et de décodage. La phase d'encodage compacte l'information en un nombre de neurones inférieur au nombre de neurones de la couche d'entrée du réseau. La phase de décodage reconstruit l'entrée de l'algorithme. Le modèle apprend donc à reconstruite les données initiales en les faisant passer par un goulot d'entranglement. Une fois les données d'entrée reconstruites, on peut déterminer la présence ou non d'une anomalie en comparant les données d'entrée et de sortie.
+Plus précisement, l'entrée de l'algorithme reçoit la valeur des capteurs lors de la dernière heure à différents instants. L'auto encodeur se compose en deux parties, la phase d'encodage et de décodage. La phase d'encodage compacte l'information en un nombre de neurones inférieur au nombre de neurones de la couche d'entrée du réseau. La phase de décodage reconstruit l'entrée de l'algorithme. Le modèle apprend donc à reconstruite les données initiales en les faisant passer par un goulot d'éntranglement. Une fois les données d'entrée reconstruites, on peut déterminer la présence ou non d'une anomalie en comparant les données d'entrée et de sortie.
 
-Pour cela, il suffit de calculer l'erreur générée par les données. L'erreur correspond à la moyenne de la différence en valeur absolue terme à terme entre les données d'entrées et de sorties. Si cette erreur est supérieure à un seuil qui est préalablement fixé lors de la phase d'entrainement, alors le robot est en fonctionnement anormal. D'un point de vue du modèle, cela signifie que l'autoencodeur lstm n'a pas bien réussi à reconstruire les données d'entrée. Si cette erreur est inférieur à ce seuil, alors l'algortihme a suffisamment bien reconstruit l'entrée et cela signfie que le robot est en fonctionnement nominal.
+Pour cela, il suffit de calculer l'erreur générée par les données. L'erreur correspond à la moyenne de la différence en valeur absolue terme à terme entre les données d'entrées et de sorties. Si cette erreur est supérieure à un seuil qui est préalablement fixé lors de la phase d'entrainement, alors le robot est en fonctionnement anormal. D'un point de vue du modèle, cela signifie que l'auto encodeur lstm n'a pas bien réussi à reconstruire les données d'entrée. Si cette erreur est inférieure à ce seuil, alors l'algorithme a suffisamment bien reconstruit l'entrée et cela signifie que le robot est en fonctionnement nominal.
 
 Le modèle est développé à l'aide du service Azure Machine Learning. Dans un workspace, deux scripts sont créés. Le premier script permet de mettre en oeuvre le contexte d'exécution du modèle. Nous indiquons notamment la cible de calcul et nous mettons en place un environnement d'exécution. Nous définissons également une expérience qui va permettre de récupérer toutes les informations, les métriques et les graphiques générés lors de la phase d'entrainement. Ce script appelle le script d'entrainement qui charge les données, réalise le data preprocessing et entraine le modèle.
 
@@ -110,10 +110,10 @@ La périodicité du lancement sera géré depuis une Azure Function directement 
 #### Services de synchronisation dans le cloud Azure (3)
 La résultante du modèle ML sera matérialisée dans une table SQL (dans Azure SQL Edge) puis traité par le hub d'évènement sur une route spécifique qui permettra l'export de l'information sur un fichier / flag dans le service Azure Storage Edge.
 
-Ce service de stockage se syncrhonisera en automatique sur un service Azure Storage dans le cloud Azure qui sera le trigger d'une chaine de services permettant l'inégration de la transaction dans le système aval.
+Ce service de stockage se synchronisera en automatique sur un service Azure Storage dans le cloud Azure qui sera le trigger d'une chaine de services permettant l'intégration de la transaction dans le système aval.
 
 #### Création et validation de la transaction dans le cloud Azure via les services de Blockchain (4)
-Une Azure function sera déclenchée à réception de l'évènement de trigger lié à la syncrhonisation du flag de déclenchement de la transaction.
+Une Azure function sera déclenchée à réception de l'évènement de trigger lié à la synchronisation du flag de déclenchement de la transaction.
 
 Dès lors, une sous Azure Function sera utilisé comme transaction builder et va créer la transaction qui sera présenter à l'environnement blockchain.
 
@@ -124,10 +124,10 @@ L'utilisation d'un service tel que Azure Blockchain Service ou AKS Hyperledger p
 Dès que celle-ci est validée le Azure Blockchain Data Manager intégré à Azure BLockchain Service permet de router l'information de validation (ainsi qu'un sous ensemble de propriétés) vers un Azure Event Grid afin de "broadcaster" la notification sur plusieurs systèmes dépendant de cette information tels que le système ERP, une fonction pour mise à jour de la base Azure CosmosDB etc.
 
 #### Déclenchement de l'ordre de maintenance dans les systèmes ERP et applications (5)
-L'information a été validé par toutes les entitées dans le service de blockchain.
+L'information a été validé par toutes les entités dans le service de blockchain.
 
 Le système ERP est alors notifié et une transaction est déclenchée dans celui-ci.
-L'information est aussi écrite dans une base Azure CosmosDB (configurée en serverless afin de ne pas engender de coûts quand il n'y a pas de problèmes remontés). Cette base est source d'une application liée à la maintenance des robots industriels. 
+L'information est aussi écrite dans une base Azure CosmosDB (configurée en serverless afin de ne pas engendrer de coûts quand il n'y a pas de problèmes remontés). Cette base est source d'une application liée à la maintenance des robots industriels. 
 
 Cette application est développée en "low code" depuis le service Microsoft PowerApps et mis à disposition sur les smartphones des différentes techniciens d'interventions.
 
@@ -137,7 +137,7 @@ Cette application est développée en "low code" depuis le service Microsoft Pow
 ## Définition
 ### Réseau
 #### Virtual networks, peering et network security groups
-Les robots équipés de leur capteurs ainsi que la gateway Azure IoT Edge sont situés dans le réseau privé de l'entreprise.
+Les robots équipés de leurs capteurs ainsi que la gateway Azure IoT Edge sont situés dans le réseau privé de l'entreprise.
 Pour simuler ce scénario, nous utilisons deux virtual networks dans Azure:
 * un virtual network contenant l'ensemble des robots, simulés dans notre cas par une VM;
 * un second virtual network contenant la gateway Azure IoT Edge.
@@ -153,7 +153,7 @@ Les robots doivent pouvoir contacter la gateway Azure IoT Edge, soit directement
 Dans notre exemple, nous utilisons une zone Azure DNS privée pour router les requêtes faites à edge.corporate.lan vers la VM Azure IoT Edge.
 
 #### Bastion
-Le service Azure Bastion est déployé dans le réseau privé "simulé". L'utilisation de ce service est optionel et ne nous sert uniquement qu'à prendre rapidement la main sur nos VMs Azure de manière plus sécurisée.
+Le service Azure Bastion est déployé dans le réseau privé "simulé". L'utilisation de ce service est optionnel et ne nous sert uniquement qu'à prendre rapidement la main sur nos VMs Azure de manière plus sécurisée.
 Une connexion SSH directe reste possible (configuration réseau nécessaire), et sera sans doute utilisée dans le cas d'un déploiement réel dans l'entreprise.
 
 ### Robots
@@ -231,7 +231,7 @@ La gateway doit être déclarée dans IoT Hub, via la commande suivante:
 az iot hub device-identity create --device-id AIRobotEdge --edge-enabled --hub-name <HUB_NAME>
 ```
 
-> **Notes:** Vous serez amener à installer l'extension `azure-iot` à l'exécution de cette commande, si elle n'est pas déjà présente sur votre machine.
+> **Notes:** Vous serez amené à installer l'extension `azure-iot` à l'exécution de cette commande, si elle n'est pas déjà présente sur votre machine.
 
 Récupération de la chaîne de connexion au service IoT Hub:
 ```Shell
@@ -361,7 +361,7 @@ Ce mode de fonctionnement permet également de réaliser des analyses directemen
 
 Se connecter à la VM gateway IoT Edge via le service `Azure Bastion` ou autre.
 
-Un certificat `root`, puis un certificat propre à la gateway `IoT Edge` et sa clé privé doivent être générés. Bien entendu, en production ces certificats doivent être générés via votre propre authorité de certification.
+Un certificat `root`, puis un certificat propre à la gateway `IoT Edge` et sa clé privée doivent être générés. Bien entendu, en production ces certificats doivent être générés via votre propre authorité de certification.
 Dans cet article, nous allons générer des certificats auto-signés en suivant la procédure suivante:
 
 [https://docs.microsoft.com/en-us/azure/iot-edge/how-to-create-transparent-gateway?view=iotedge-2018-06#set-up-the-device-ca-certificate](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-create-transparent-gateway?view=iotedge-2018-06#set-up-the-device-ca-certificate)
@@ -401,7 +401,7 @@ Editer également la valeur du paramètre `hostname` ainsi:
 hostname: "edge.corporate.lan"
 ```
 
->**Notes:** Il est important que la valeur de ce paramètre soit `edge.corporate.lan` car c'est cette valeur qui sera utilisée dans la chaîne de connection des robots à la gateway IoT Edge. Si ces deux valeurs sont différentes, une erreur de connexion se produira.
+>**Notes:** Il est important que la valeur de ce paramètre soit `edge.corporate.lan` car c'est cette valeur qui sera utilisée dans la chaîne de connexion des robots à la gateway IoT Edge. Si ces deux valeurs sont différentes, une erreur de connexion se produira.
 Il est possible de spécifier une valeur différente de `edge.corporate.lan` afin de reflêter votre déploiement, en prenant soin de bien utiliser cette même valeur dans la chaîne de connexion des robots.
 
 Sauvegarder les modifications puis redémarrer le service `IoT Edge`.
@@ -556,7 +556,7 @@ Nous aborderons dans la suite le modèle que nous avons choisi pour détecter le
 
 #### Choix du modèle :
 Pour faire de la détection d'anomalie, nous avons à notre disposition plusieurs algorithmes. 
-En plus des approches classiques de classification ou de clustering, des algortihmes spécifiques à la détection d'anomalie comme le One-Class SVM ou l'Isolation Forest peuvent s'avérer efficace. 
+En plus des approches classiques de classification ou de clustering, des algorithmes spécifiques à la détection d'anomalie comme le One-Class SVM ou l'Isolation Forest peuvent s'avérer efficace. 
 
 Des méthodes statistiques telles que ARIMA permettent également de faire de la détection d'anomalie (sur des séries temporelles). 
 
@@ -569,10 +569,10 @@ Le modèle dira s'il est dans un état nominal ou s'il y a une anomalie. Il sera
 C'est une approche plus générale d'un problème de maintenance prédictive.
 
 #### Préparation des données :
-Notre dataset comporte quatre features décrivant la vitesse de perçage, la température de perçage, le frottement du forêt et la température de l'eau de refroidissement de nos robots au cours du temps. 
+Notre dataset comporte quatre features décrivant la vitesse de perçage, la température de perçage, le frottement du foret et la température de l'eau de refroidissement de nos robots au cours du temps. 
 
 A partir de ces données, nous allons construire un autoencodeur lstm. Nous n'avons pas de données manquantes. 
-Une sélection de variables ou du feature enginieering ne sont pas des étapes utiles dans notre cas. Il faut par contre procéder à une normalisation des données. 
+Une sélection de variables ou du feature enginieering ne sont pas des étapes utiles dans notre cas. Il faut cependant procéder à une normalisation des données. 
 La méthode StandardScaler de Scikit Learn est utilisée ici. 
 
 La deuxième étape de preprocessing est la mise en forme des données sous la forme de séries temporelles pour l'entrainement. Pour cela on utilise la fonction suivante permettant de créer des blocs de (60x4) correspondant à une série temporelle (60 périodes de temps avec les quatre features du dataset. X_final est donc un array de N blocs de (60x4).
@@ -685,7 +685,7 @@ Le développement de ce modèle s'est déroulé en plusieurs étapes. Après le 
 Afin de créer l'environnement Blockchain de validation des transactions de maintenance nous utiliserons le service encore en Preview Azure Blockchain Services.
 Ce nouveau service permet de créer un environnement Blockchain privé sur protocole Quorum (basé du Ethereum) avec un consensus de type POA (Proof of Authority).
 
-Le consensus de type POA permet a plusieurs noeuds de validations, donc autorités faisant parties d'un cercle de consensus, de valider une transaction émise sur la blockchain.
+Le consensus de type POA permet à plusieurs noeuds de validations, donc autorités faisant parties d'un cercle de consensus, de valider une transaction émise sur la blockchain.
 Vous pourrez trouver toutes les informations sur ce type de consensus sur le lien suivant : [Proof of Authority](https://en.wikipedia.org/wiki/Proof_of_authority)
 
 Le service de Blockchain Microsoft permet de créer toute l'infrastructure de validation de transaction en mode PaaS (Platform as a Service). Vous trouverez toutes les informations ici : [Azure Blockchain Service](https://docs.microsoft.com/fr-fr/azure/blockchain/service/overview)
@@ -699,7 +699,7 @@ Quorum est un fork de go-ethereum, open source et toutes les informations sont d
 Le déploiement va permettre la mise à disposition d'un noeud Blockchain.
 ![](/Pictures/Blockchain-MEMBER.png?raw=true)
 
-Chacune des parties prenante se verra attribuer sa propre architecture de validation, soir un consortium constitué de n noeuds de validation.
+Chacune des parties prenantes se verra attribuer sa propre architecture de validation, soir un consortium constitué de n noeuds de validation.
 ![](/Pictures/Blockchain-CONSORTIUM.png?raw=true)
 
 Afin de permettre la validation de nos transactions il nous faudra donc déployer
@@ -726,14 +726,14 @@ az blockchain member create \
                             --sku "Basic"
 ```
 Afin de tester le bon fonctionnement de votre infrastructure vous pouvez maintenant tester la connexion sur votre blockchain privée en utilisant par exemple l'extension de navigateur Metamask.
-Il vous faudra dans un premier temps récupérer la chaîne de connexion, vous la trouverez dans le portail sur le neoud de trabnsaction. Celle-ci est de la forme suivante.
+Il vous faudra dans un premier temps récupérer la chaîne de connexion, vous la trouverez dans le portail sur le noeud de transaction. Celle-ci est de la forme suivante.
 
 ```Shell
 https://<your dns>.blockchain.azure.com:3200/<your access key>
 ```
 
 Dès lors via l'extension Metamask et une connexion par RPC personnalisé vous pouvez accéder à votre réseau de blockchain privé et commencer le déploiement de "Smart Contract".
-Un smart contrat est un contrat numérique immuable déployé sur la blockchain. Toutes les transactions devant être validées sur la blockchain doivent répondre aux exigences de ce smart contrat.
+Un smart contrat est un contrat numérique immuable déployée sur la blockchain. Toutes les transactions devant être validées sur la blockchain doivent répondre aux exigences de ce smart contrat.
 
 Dans une vision simplifiée un smart contract représente un ensemble de règles que doit respecter une transaction pour que celle-ci soit validée. Chacun des noeuds du consortium valide à son tour la transaction, si tous la valide alors elle est écrite dans la Blockchain de façon immuable.
 Toutes les informations sur les smart contract ici : [Wikipedia Smart Contract](https://en.wikipedia.org/wiki/Smart_contract)
@@ -761,7 +761,7 @@ contract simple {
 }
 ```
 Dès lors que votre infrastructure est déployé ainsi que votre smart contract il est possible de le tester directement depuis par exemple une logic apps.
-Pour se faire il vous faudra récupérer l'adresse de votre smart contract une dois déployé et l'entrée en paramètre dans la tâche logic apps.
+Pour se faire il vous faudra récupérer l'adresse de votre smart contract une fois déployé et l'insérer en paramètre dans la tâche logic apps.
 
 Exemple de paramétrage.
 ![](/Pictures/LogicApps.jpg?raw=true)
@@ -779,12 +779,12 @@ La logique étant qu'à la réception du flag (fichier) synchronisé depuis le A
 
 ### Routage de l'information de transaction validée sur un event grid
 
-Une fois l'information validée dans la blockchain il est nécessaire de router cette information, tout du moins de notifier les systèmes sous jacents de cette validation pour déclencher des actions dans d'autres systèmes.
+Une fois l'information validée dans la blockchain il est nécessaire de router cette information, tout du moins de notifier les systèmes sous-jacents de cette validation pour déclencher des actions dans d'autres systèmes.
 Cette étape est par exemple réalisable vie le service Azure Blockchain Data Manager qui permet de router l'information de validation sur par exemple un Azure Event Grid.
 
 Blockchain Data Manager capture, transforme et fournit des données de transaction Azure Blockchain Service aux rubriques Azure Event Grid proposant une intégration de registre blockchain évolutive et fiable aux services Azure.
 
-Le principe est donc de s'abonner à un smart contract et à la validation d'une transaction un message / notificztion est postée sur le service Azure Event Grid.
+Le principe est donc de s'abonner à un smart contract et à la validation d'une transaction un message / notification est postée sur le service Azure Event Grid.
 ![](/Pictures/AzureBlockchainDataManager.jpg?raw=true)
 
 Une instance de Blockchain Data Manager surveille un nœud de transaction Azure Blockchain Service. Une instance capture toutes les données de bloc brut et de transaction brute à partir du nœud de transaction. Blockchain Data Manager publie un message RawBlockAndTransactionMsg qui est un sur-ensemble des informations retournées par les requêtes web3.eth [getBlock](https://web3js.readthedocs.io/en/v1.2.0/web3-eth.html#getblock) et [getTransaction](https://web3js.readthedocs.io/en/v1.2.0/web3-eth.html#gettransaction).
@@ -848,7 +848,7 @@ Azure Cosmos DB serverless vous permet d’utiliser votre compte Azure Cosmos su
 
 Dans notre architecture la base de données NoSQL; Azure CosmosDB, pourrai être utilisée en mode complètement à la demande, celle-ci étant accédée uniquement lors d'un appel en consultation via l'application de maintenance ou quand une transaction a été validée dans la Blockchain, donc écrite comme ordre de maintenance.
 
-L'aritcle suivant vous permettra de mieux comprendre les différents modes et de faire le bon choix: [Comment choisir entre le mode débit approvisionné et le mode serverless](https://docs.microsoft.com/fr-fr/azure/cosmos-db/throughput-serverless).
+L'article suivant vous permettra de mieux comprendre les différents modes et de faire le bon choix: [Comment choisir entre le mode débit approvisionné et le mode serverless](https://docs.microsoft.com/fr-fr/azure/cosmos-db/throughput-serverless).
 
 Les conteneurs serverless exposent les mêmes fonctionnalités que les conteneurs créés en mode de débit approvisionné, ce qui vous permet de lire, d’écrire et d’interroger vos données exactement de la même façon. Toutefois, les comptes et les conteneurs serverless ont également des caractéristiques spécifiques.
 
