@@ -107,7 +107,7 @@ Ce modèle de machine learning est exporté au format ONNX et directement intég
 Nous voulions appeler le modèle intégré dans Azure SQL Edge via la fonction PREDICT (T-SQL). Mais les tableaux multi-dimensionnels ne sont pas supportés par la fonction PREDICT (voir citation ci-dessous). Or, notre modèle prédit des séries temporelles qui ont donc plusieurs dimensions. Il est indiqué qu’il faut que chaque entrée corresponde à une colonne de la table de scoring. Il faudrait modifier l’entrée du modèle ONNX ou passer par une fonction Python qui est difficilement convertible en ONNX.  Nous décidons finalement de créer un conteneur qui héberge une Azure Function Python pour scorer le modèle ONNX au lieu d’utiliser la fonction PREDICT.
 
 > The scoring data needs to be in the same format as the training data. Complex data types such as multi-dimensional arrays are not supported by PREDICT. So, for training make sure that each input of the model corresponds to a single column of the scoring table instead of passing a single array containing all inputs. 
-> [Score machine learning models with PREDICT - Azure Synapse Analytics | Microsoft Docs](lien)
+> [Lien](https://docs.microsoft.com/fr-fr/azure/synapse-analytics/sql-data-warehouse/sql-data-warehouse-predict)
 
 La périodicité du lancement sera géré depuis une Azure Function directement depuis un custom runtime embarqué dans la gateway @Edge.
 
