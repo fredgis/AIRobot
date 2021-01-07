@@ -548,9 +548,9 @@ https://docs.microsoft.com/fr-fr/azure/azure-sql-edge/deploy-onnx
 
 
 # 4. Architecture "Cloud"
-### Modèle de Machine Learning / Deep Learning pour la detection d'anomalie 
+### Modèle de Machine Learning / Deep Learning pour la détection d'anomalie 
 
-Cette article présente l'algortihme de machine learning / deep learning utilisé pour détecter les anomalies des robots de la flotte.
+Cet article présente l'algortihme de machine learning / deep learning utilisé pour détecter les anomalies des robots de la flotte.
 
 #### Introduction : 
 Pour notre étude, nous voulons mettre en oeuvre un algorithme de machine learning / deep learning en python permettant de détecter les anomalies sur des robots dans le cadre d'une maintenance prédictive. Nous aborderons dans la suite le modèle que nous avons choisi pour détecter les anomalies des robots. Nous décrirons l'ensemble des étapes de développement de l'algorithme puis nous finirons par expliquer la démarche générale de mise en production du modèle sous ONNX.
@@ -676,7 +676,7 @@ print(erreur(pred_onnx_std,pred_onnx[0]))
 Une importation des deux modèles est effectuée. Nous faisons passer les nouvelles données dans les modèles puis nous finissons par calculer l'erreur grâce à la fonction erreur. 
 
 Si le résultat est inférieur au seuil, alors le robot est en fonctionnement normal sinon il est en fonctionnement anormal. 
-Sur des données de plusieurs jours, on calcule l'erreur toute les minutes. Les résultats sont résumés sur le graphique ci-dessous. On s'aperçoit qu'il y a la détection d'une anomalie entre les séries temporelles 4000 et 9000. Le fonctionnement du robot est normal le reste du temps. 
+Sur des données de plusieurs jours, on calcule l'erreur toutes les minutes. Les résultats sont résumés sur le graphique ci-dessous. On s'aperçoit qu'il y a la détection d'une anomalie entre les séries temporelles 4000 et 9000. Le fonctionnement du robot est normal le reste du temps. 
 ![](/Pictures/Prediction_test_data_1609258462.png?raw=true)
 
 #### Conclusion :
