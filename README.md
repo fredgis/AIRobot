@@ -106,8 +106,7 @@ Ce modèle de machine learning est exporté au format ONNX et directement intég
 
 Nous voulions appeler le modèle intégré dans Azure SQL Edge via la fonction PREDICT (T-SQL). Mais les tableaux multi-dimensionnels ne sont pas supportés par la fonction PREDICT (voir citation ci-dessous). Or, notre modèle prédit des séries temporelles qui ont donc plusieurs dimensions. Il est indiqué qu’il faut que chaque entrée corresponde à une colonne de la table de scoring. Il faudrait modifier l’entrée du modèle ONNX ou passer par une fonction Python qui est difficilement convertible en ONNX.  Nous décidons finalement de créer un conteneur qui héberge une Azure Function Python pour scorer le modèle ONNX au lieu d’utiliser la fonction PREDICT.
 
-> The scoring data needs to be in the same format as the training data. Complex data types such as multi-dimensional arrays are not supported by PREDICT. So, for training make sure that each input of the model corresponds to a single column of the scoring table instead of passing a single array containing all inputs.
-
+> The scoring data needs to be in the same format as the training data. Complex data types such as multi-dimensional arrays are not supported by PREDICT. So, for training make sure that each input of the model corresponds to a single column of the scoring table instead of passing a single array containing all inputs. 
 > [Score machine learning models with PREDICT - Azure Synapse Analytics | Microsoft Docs](lien)
 
 La périodicité du lancement sera géré depuis une Azure Function directement depuis un custom runtime embarqué dans la gateway @Edge.
@@ -641,7 +640,7 @@ Une erreur élevée signifie que le modèle a rencontré des données éloignée
 Ces nouvelles données signifient donc que le robot est en fonctionnement anormal. Une erreur est faible si elle est inférieure à un seuil d'erreur et elevée si elle est supérieure à ce même seuil. Plus l'erreur est éloignée de ce dernier et plus le fonctionnement du robot est anormal. 
 Déterminons graphiquement le seuil associé à notre modèle. 
 
-Le graphique qui suit représente l'erreur de chaque série lors de la phase d'entrainement, c'est à dire en fonctionnement normal du robot. L'erreur de reconstruction maximale de la phase d'entrainement est de 0,9. C'est donc le seuil qui va nous servir à déterminer si les nouvelles données exploitées représentent le fonctionnement normal ou non du robot.
+Le graphique qui suit représente l'erreur de chaque série lors de la phase d'entrainement, c'est à dire en fonctionnement normal du robot. L'erreur de reconstruction maximale de la phase d'entrainement est inférieure à 0,9. C'est donc le seuil qui va nous servir à déterminer si les nouvelles données exploitées représentent le fonctionnement normal ou non du robot.
 ![](/Pictures/Plot_erreur_train_data_1609258385.png?raw=true)
 
 #### Préparation de la mise en production sous ONNX :
