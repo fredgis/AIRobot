@@ -103,7 +103,11 @@ Pour cela, il suffit de calculer l'erreur générée par les données. L'erreur 
 Le modèle est développé à l'aide du service Azure Machine Learning. Dans un workspace, deux scripts sont créés. Le premier script permet de mettre en oeuvre le contexte d'exécution du modèle. Nous indiquons notamment la cible de calcul et nous mettons en place un environnement d'exécution. Nous définissons également une expérience qui va permettre de récupérer toutes les informations, les métriques et les graphiques générés lors de la phase d'entrainement. Ce script appelle le script d'entrainement qui charge les données, réalise le data preprocessing et entraine le modèle.
 
 Ce modèle de machine learning est exporté au format ONNX et directement intégré dans une base/table Azure SQL Edge.
-La nouvelle fonctionnalité PREDICT de Azure SQL Edge permettra d'appeler ce modèle depuis une procédure stockée afin, toutes les heures, d'étudier les évènements reçus afin de déterminer les risques d'anomalies au niveau du robot.
+
+Nous voulions appeler le modèle stocké dans Azure SQL Edge via la fonction PREDICT (T-SQL). Mais les tableaux multi-dimensionnels ne sont pas supportés par la fonction PREDICT (voir citation ci-dessous). Or, notre modèle prédit des séries temporelles qui ont donc plusieurs dimensions. Il est indiqué qu’il faut que chaque entrée corresponde à une colonne de la table de scoring. Il faudrait modifier l’entrée du modèle ONNX ou passer par une fonction de python qui est difficilement convertible en ONNX.  Nous décidons finalement de créer un conteneur qui héberge une Azure Function Python pour scorer le modèle ONNX au lieu d’utiliser la fonction PREDICT.
+
+> The scoring data needs to be in the same format as the training data. Complex data types such as multi-dimensional arrays are not supported by PREDICT. So, for training make sure that each input of the model corresponds to a single column of the scoring table instead of passing a single array containing all inputs.
+> [Score machine learning models with PREDICT - Azure Synapse Analytics | Microsoft Docs]
 
 La périodicité du lancement sera géré depuis une Azure Function directement depuis un custom runtime embarqué dans la gateway @Edge.
 
@@ -549,16 +553,7 @@ https://docs.microsoft.com/fr-fr/azure/azure-sql-edge/deploy-onnx
 Cette article présente l'algortihme de machine learning / deep learning utilisé pour détecter les anomalies des robots de la flotte.
 
 #### Introduction : 
-Pour notre étude, nous voulons mettre en oeuvre un algorithme de machine learning / deep learning en python permettant de détecter les anomalies sur des robots dans le cadre d'une maintenance prédictive. 
-
-Nous voulions appeler le modèle stocké dans Azure SQL Edge via la fonction PREDICT (T-SQL). Mais les tableaux multi-dimensionnels ne sont pas supportés par la fonction PREDICT (voir citation ci-dessous). Or, notre modèle prédit des séries temporelles qui ont donc plusieurs dimensions. Il est indiqué qu’il faut que chaque entrée corresponde à une colonne de la table de scoring. Il faudrait modifier l’entrée du modèle ONNX ou passer par une fonction de python qui est difficilement convertible en ONNX.  Nous décidons finalement de créer un conteneur qui héberge une Azure Function Python pour scorer le modèle ONNX au lieu d’utiliser la fonction PREDICT.
-
-> The scoring data needs to be in the same format as the training data. Complex data types such as multi-dimensional arrays are not supported by PREDICT. So, for training make sure that each input of the model corresponds to a single column of the scoring table instead of passing a single array containing all inputs.
-Lien : Score machine learning models with PREDICT - Azure Synapse Analytics | Microsoft Docs
-
- 
-
-Nous aborderons dans la suite le modèle que nous avons choisi pour détecter les anomalies des robots. Nous décrirons l'ensemble des étapes de développement de l'algorithme puis nous finirons par expliquer la démarche générale de mise en production du modèle sous ONNX.
+Pour notre étude, nous voulons mettre en oeuvre un algorithme de machine learning / deep learning en python permettant de détecter les anomalies sur des robots dans le cadre d'une maintenance prédictive. Nous aborderons dans la suite le modèle que nous avons choisi pour détecter les anomalies des robots. Nous décrirons l'ensemble des étapes de développement de l'algorithme puis nous finirons par expliquer la démarche générale de mise en production du modèle sous ONNX.
 
 #### Choix du modèle :
 Pour faire de la détection d'anomalie, nous avons à notre disposition plusieurs algorithmes. 
