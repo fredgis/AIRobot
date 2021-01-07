@@ -91,12 +91,12 @@ L'intégration des données sera gérée par le nouveau service de streaming con
 
 #### Modèle de machine learning entrainé dans le cloud et déployé @edge (2)
 
-Le développement de la solution de machine learning utilise le service Azure Machine Learning. Une fois le modèle développé, il est exporté sous ONNX. Open Neural Network Exchange est un moteur d'inférence haute performance, optimisé pour le cloud et les infrastructures at the edge. Le modèle utilisé est un autoencoder lstm (long short-term memory). Cette approche, basée sur les auto encodeurs et sur les réseaux de neurones récurrents, offre plusieurs avantages dans le cadre de la détection d'anomalie pour la flotte de robot :
+Le développement de la solution de machine learning utilise le service Azure Machine Learning. Une fois le modèle développé, il est exporté sous ONNX. Open Neural Network Exchange est un moteur d'inférence haute performance, optimisé pour le cloud et les infrastructures at the edge. Le modèle utilisé est un autoencoder lstm (long short-term memory). Cette approche, basée sur les auto encodeurs et sur les réseaux de neurones récurrents, offre plusieurs avantages dans le cadre de la détection d'anomalie pour la flotte de robots :
 
 * Algorithme pour la prévision de séries temporelles permettant de prendre en compte l'évolution des capteurs au cours du temps et non seulement l'état des capteurs à l'instant t.
 * Algorithme se basant sur le fonctionnement nominal des robots et qui sera capable de détecter n'importe quel type d'anomalie dans le futur. Il n'y a donc pas besoin d'une base de données d'entraînement comportant des anomalies. C'est un algorithme de type non supervisé.
 
-Plus précisement, l'entrée de l'algorithme reçoit la valeur des capteurs lors de la dernière heure à différents instants. L'auto encodeur se compose en deux parties, la phase d'encodage et de décodage. La phase d'encodage compacte l'information en un nombre de neurones inférieur au nombre de neurones de la couche d'entrée du réseau. La phase de décodage reconstruit l'entrée de l'algorithme. Le modèle apprend donc à reconstruite les données initiales en les faisant passer par un goulot d'éntranglement. Une fois les données d'entrée reconstruites, on peut déterminer la présence ou non d'une anomalie en comparant les données d'entrée et de sortie.
+Plus précisément, l'entrée de l'algorithme reçoit la valeur des capteurs lors de la dernière heure à différents instants. L'auto encodeur se compose en deux parties, la phase d'encodage et de décodage. La phase d'encodage compacte l'information en un nombre de neurones inférieur au nombre de neurones de la couche d'entrée du réseau. La phase de décodage reconstruit l'entrée de l'algorithme. Le modèle apprend donc à reconstruite les données initiales en les faisant passer par un goulot d'étranglement. Une fois les données d'entrée reconstruites, on peut déterminer la présence ou non d'une anomalie en comparant les données d'entrée et de sortie.
 
 Pour cela, il suffit de calculer l'erreur générée par les données. L'erreur correspond à la moyenne de la différence en valeur absolue terme à terme entre les données d'entrées et de sorties. Si cette erreur est supérieure à un seuil qui est préalablement fixé lors de la phase d'entrainement, alors le robot est en fonctionnement anormal. D'un point de vue du modèle, cela signifie que l'auto encodeur lstm n'a pas bien réussi à reconstruire les données d'entrée. Si cette erreur est inférieure à ce seuil, alors l'algorithme a suffisamment bien reconstruit l'entrée et cela signifie que le robot est en fonctionnement nominal.
 
@@ -576,7 +576,7 @@ A partir de ces données, nous allons construire un autoencodeur lstm. Nous n'av
 Une sélection de variables ou du feature enginieering ne sont pas des étapes utiles dans notre cas. Il faut cependant procéder à une normalisation des données. 
 La méthode StandardScaler de Scikit Learn est utilisée ici. 
 
-La deuxième étape de preprocessing est la mise en forme des données sous la forme de séries temporelles pour l'entrainement. Pour cela on utilise la fonction suivante permettant de créer des blocs de (60x4) correspondant à une série temporelle (60 périodes de temps avec les quatre features du dataset. X_final est donc un array de N blocs de (60x4).
+La deuxième étape de preprocessing est la mise en forme des données sous la forme de séries temporelles pour l'entrainement. Pour cela, on utilise la fonction suivante permettant de créer des blocs de (60x4) correspondant à une série temporelle (60 périodes de temps avec les quatre features du dataset. X_final est donc un array de N blocs de (60x4).
 
 ```python
 def mise_en_serie_temporelle(X):
@@ -637,10 +637,10 @@ L'objectif du modèle ci-dessus et d'attribuer une erreur de reconstruction à c
 Une erreur faible signifie que le modèle est bien arrivé à reconstruire l'entrée donnée à l'algorithme, le robot est donc en fonctionnement normal. 
 Une erreur élevée signifie que le modèle a rencontré des données éloignées des données normales sur lesquels il a été entrainé. 
 
-Ces nouvelles données signifient donc que le robot est en fonctionnement anormal. Une erreur est faible si elle est inférieure à un seuil d'erreur et elevée si elle est supérieure à ce même seuil. Plus l'erreur est éloignée de ce dernier et plus le fonctionnement du robot est anormal. 
+Ces nouvelles données signifient donc que le robot est en fonctionnement anormal. Une erreur est faible si elle est inférieure à un seuil d'erreur et élevée si elle est supérieure à ce même seuil. Plus l'erreur est éloignée de ce dernier et plus le fonctionnement du robot est anormal. 
 Déterminons graphiquement le seuil associé à notre modèle. 
 
-Le graphique qui suit représente l'erreur de chaque série lors de la phase d'entrainement, c'est à dire en fonctionnement normal du robot. L'erreur de reconstruction maximale de la phase d'entrainement est inférieure à 0,9. C'est donc le seuil qui va nous servir à déterminer si les nouvelles données exploitées représentent le fonctionnement normal ou non du robot.
+Le graphique qui suit représente l'erreur de chaque série lors de la phase d'entrainement, c'est-à-dire en fonctionnement normal du robot. L'erreur de reconstruction maximale de la phase d'entrainement est inférieure à 0,9. C'est donc le seuil qui va nous servir à déterminer si les nouvelles données exploitées représentent le fonctionnement normal ou non du robot.
 ![](/Pictures/Plot_erreur_train_data_1609258385.png?raw=true)
 
 #### Préparation de la mise en production sous ONNX :
