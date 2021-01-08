@@ -26,8 +26,9 @@ namespace afpredict
                 if (!double.TryParse(Environment.GetEnvironmentVariable("ComputeModelThreshold"), out errorThreshold))
                     throw new Exception("ComputeModelThreshold app settings has bad format.");
 
-                Logger.LogInformation("Connecting to SQL Server...");
-                using SqlConnection connection = new SqlConnection(Environment.GetEnvironmentVariable("EdgeSqlConnectionString"));
+                var edgeSqlConnectionString = Environment.GetEnvironmentVariable("EdgeSqlConnectionString");
+                Logger.LogInformation($"Connecting to SQL Server {edgeSqlConnectionString}...");
+                using SqlConnection connection = new SqlConnection(edgeSqlConnectionString);
                 await connection.OpenAsync();
                 Logger.LogInformation("Connected.");
 
