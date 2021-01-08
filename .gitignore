@@ -1,3 +1,7 @@
 *.local.json
 Src/RobotSimulator/bin/*
 Src/RobotSimulator/obj/*
+Src/ModelsRuntime/obj/Debug/netcoreapp3.1/.NETCoreApp,Version=v3.1.AssemblyAttributes.cs
+Src/ModelsRuntime/obj/Debug/netcoreapp3.1/afpredict.AssemblyInfo.cs
+Src/ModelsRuntime/obj/Debug/netcoreapp3.1/afpredict.AssemblyInfoInputs.cache
+Src/ModelsRuntime/obj/Debug/netcoreapp3.1/afpredict.csprojAssemblyReference.cache
