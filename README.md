@@ -654,7 +654,6 @@ GO
 ```
 
 >**Notes:** Noter la `LOCATION` de l'external stream `RobotSensors` créé. La valeur renseignée doit être égale à la valeur utilisée pour nomer l'input SQL Edge dans la route configurée dans le module Edge Hub.
-
 >Pour rappel:
 >```JSON
 >"routes": {
