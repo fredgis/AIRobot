@@ -12,7 +12,7 @@
 - [@Edge : Déploiement du simulateur de robots](https://github.com/fredgis/AIRobot#d%C3%A9ploiement-du-simulateur-des-mesures-du-robot);
 - [@Edge : Configuration du module Azure SQL Edge et Streaming Job](https://github.com/fredgis/AIRobot#configuration-du-module-sql-edge);
 - [@Edge : Déploiement du modèle ONNX dans SQLEdge](https://github.com/fredgis/AIRobot#d%C3%A9ploiement-du-mod%C3%A8le-onnx-dans-sqledge);
-- [@Edge : Ordonnancement des prédictions via Azure Function](https://github.com/fredgis/AIRobot#ordonnancement-des-pr%C3%A9dictions-via-azure-function);
+- [@Edge : Prédictions via Custom Module IoT Edge](https://github.com/fredgis/AIRobot#pr%C3%A9dictions-via-custom-module-iot-edge);
 - [@Cloud : Création du modèle de machine learning de détection d'anomalies](https://github.com/fredgis/AIRobot#mod%C3%A8le-de-machine-learning--deep-learning-pour-la-d%C3%A9tection-danomalie);
 - [@Cloud : Création de l'environnement Blockchain (POA) pour validation des transactions (Quorum)](https://github.com/fredgis/AIRobot#cr%C3%A9ation-de-lenvironnement-blockchain-poa-pour-validation-des-transactions-quorum);
 - [@Cloud : Routage de l'information de transaction validée sur un event grid](https://github.com/fredgis/AIRobot#routage-de-linformation-de-transaction-valid%C3%A9e-sur-un-event-grid);
