@@ -36,6 +36,27 @@
                         "status": "running",
                         "restartPolicy": "always",
                         "version": "1.0"
+                    },
+                    "AIRobotModelsRuntime": {
+                        "settings": {
+                            "image": "crobin1/airobotmodelsruntime:latest",
+                            "createOptions": ""
+                        },
+                        "type": "docker",
+                        "version": "1.0",
+                        "env": {
+                            "EdgeSqlConnectionString": {
+                                "value": "Server=AzureSQLEdge;Database=airobotedgedb;User Id=sa;Password=<SQL_PASSWORD>;"
+                            },
+                            "EdgeBlobStorageConnectionString": {
+                                "value": "DefaultEndpointsProtocol=http;BlobEndpoint=http://azureblobstorageoniotedge:11002/<SA_EDGE_NAME>;AccountName=<SA_EDGE_NAME>;AccountKey=<SA_EDGE_KEY>;"
+                            },
+                            "ComputeModelThreshold": {
+                                "value": "0.9"
+                            }
+                        },
+                        "status": "running",
+                        "restartPolicy": "always"
                     }
                 },
                 "runtime": {

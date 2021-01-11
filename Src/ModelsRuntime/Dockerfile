@@ -13,11 +13,13 @@ RUN apt-get update; \
 
 RUN apt-get --assume-yes install p7zip
 
+RUN apt-get install libgomp1
+
 WORKDIR /home
 RUN mkdir afpredict
 WORKDIR /home/afpredict
-RUN wget https://raw.githubusercontent.com/fredgis/AIRobot/main/Builds/ModelsRuntime/Linux-x64/publish.7z?token=APXEJQ7BHYBFNJ22YNC33WLAAVTMW
-RUN mv publish.7z?token=APXEJQ7BHYBFNJ22YNC33WLAAVTMW publish.7z
+RUN wget https://raw.githubusercontent.com/fredgis/AIRobot/main/Builds/ModelsRuntime/Linux-x64/publish.7z?token=APXEJQZ2CQYC3CU4QOOXSWDAAWAPW
+RUN mv publish.7z?token=APXEJQZ2CQYC3CU4QOOXSWDAAWAPW publish.7z
 RUN 7zr e publish.7z
 RUN rm publish.7z
 
