@@ -3,10 +3,10 @@
 > **Notes:** Cet article est un mixte entre hands on et hackaton, nous espérons qu'il vous donnera une meilleure vision des possibilités industrielles de telles approches :)
 
 ## Contenu
-- [Introduction à l'architecture](https://github.com/fredgis/AIRobot#1-architecture-introduction);
+- [Introduction à l'architecture et approche globale](https://github.com/fredgis/AIRobot#1-architecture-introduction);
 - [Architecture technique détaillée](https://github.com/fredgis/AIRobot#2-architecture-d%C3%A9taill%C3%A9e);
 - [@Edge : Réseau et sécurité](https://github.com/fredgis/AIRobot#virtual-networks-peering-et-network-security-groups);
-- [@Edge : Déploiement des ressources Azure IOT Hub, SQL Edge, Function](https://github.com/fredgis/AIRobot#d%C3%A9ploiement-des-ressources-at-the-edge-dans-azure);
+- [@Edge : Déploiement des ressources Azure IOT Edge, Azure SQL Edge, Azure Function](https://github.com/fredgis/AIRobot#d%C3%A9ploiement-des-ressources-at-the-edge-dans-azure);
 - [@Edge : Configuration de la gateway Azure IOT Edge](https://github.com/fredgis/AIRobot#configuration-de-la-gateway-azure-iot-edge);
 - [@Edge : Azure IOT Edge comme Gateway Transparente](https://github.com/fredgis/AIRobot#azure-iot-edge-as-transparent-gateway);
 - [@Edge : Déploiement du simulateur de robots](https://github.com/fredgis/AIRobot#d%C3%A9ploiement-du-simulateur-des-mesures-du-robot);
