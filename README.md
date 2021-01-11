@@ -659,7 +659,7 @@ GO
 >```JSON
 >"routes": {
 >    "route": "FROM /messages/* INTO $upstream",
->    "RobotSensorsTopic": "FROM /messages/* INTO >BrokeredEndpoint(\"/modules/AzureSQLEdge/inputs/>RobotSensors\")"
+>    "RobotSensorsTopic": "FROM /messages/* INTO BrokeredEndpoint(\"/modules/AzureSQLEdge/inputs/>RobotSensors\")"
 >}
 >```
 
@@ -753,6 +753,41 @@ Toutes les minutes, l'utilitaire requête la table `dbo.Events` du SQL Edge pour
 En cas d'erreur supérieur à un seuil, ici 0.9, le score et le jeu de données concerné sont sauvegardés sur le Blob Storage de l'IoT Edge puis répliqué dans le cloud pour de potentiels futurs traitements.
 
 Ce module de prédiction est automatiquement déployé sur la gateway IoT Edge grâce au fichier de configuration utilisé précédemment.
+
+### Construction du Custom Module IoT Edge
+L'image Docker du Custom Module IoT Edge est cons truite à partir d'une image Ubuntu 18.04 à laquelle est ajoutée le runtime .NET Core 3.1, la dépendance `libgomp1` nécessaire au runtime ONNX pour Linux, ainsi que le package de l'utilitaire en .NET Core qui applique les modèles ONNX aux données reçues dans Edge Hub.
+
+```Dockerfile
+FROM ubuntu:18.04
+
+RUN apt-get update
+RUN apt-get --assume-yes install wget
+
+RUN wget https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+RUN dpkg -i packages-microsoft-prod.deb
+
+RUN apt-get update; \
+    apt-get --assume-yes install -y apt-transport-https && \
+    apt-get update && \
+    apt-get --assume-yes install -y dotnet-runtime-3.1
+
+RUN apt-get --assume-yes install p7zip
+
+RUN apt-get install libgomp1
+
+WORKDIR /home
+RUN mkdir afpredict
+WORKDIR /home/afpredict
+RUN wget https://raw.githubusercontent.com/fredgis/AIRobot/main/Builds/ModelsRuntime/Linux-x64/publish.7z
+RUN 7zr e publish.7z
+RUN rm publish.7z
+
+RUN apt-get --assume-yes remove p7zip
+RUN apt-get --assume-yes remove wget
+RUN apt-get clean
+
+CMD ["dotnet", "afpredict.dll"]
+```
 
 ### Liens vers document de références
 - [ONNX Runtime C# API](https://www.onnxruntime.ai/docs/reference/api/csharp-api.html)
