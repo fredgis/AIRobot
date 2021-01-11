@@ -1,3 +1,5 @@
+# AIRobot - la maintenance intelligente @Edge !
+
 > **Notes:** Cet article est un mixte entre hands on et hackaton, nous espérons qu'il vous donnera une meilleure vision des possibilités industrielles de telles approches :)
 
 # 1. Architecture introduction
