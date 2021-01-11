@@ -2,6 +2,23 @@
 
 > **Notes:** Cet article est un mixte entre hands on et hackaton, nous espérons qu'il vous donnera une meilleure vision des possibilités industrielles de telles approches :)
 
+## Contenu
+- [Introduction à l'architecture](https://github.com/fredgis/AIRobot#1-architecture-introduction);
+- [Architecture technique détaillée](https://github.com/fredgis/AIRobot#2-architecture-d%C3%A9taill%C3%A9e);
+- [@Edge : Réseau et sécurité](https://github.com/fredgis/AIRobot#virtual-networks-peering-et-network-security-groups);
+- [@Edge : Déploiement des ressources Azure IOT Hub, SQL Edge, Function](https://github.com/fredgis/AIRobot#d%C3%A9ploiement-des-ressources-at-the-edge-dans-azure);
+- [@Edge : Configuration de la gateway Azure IOT Edge](https://github.com/fredgis/AIRobot#configuration-de-la-gateway-azure-iot-edge);
+- [@Edge : Azure IOT Edge comme Gateway Transparente](https://github.com/fredgis/AIRobot#azure-iot-edge-as-transparent-gateway);
+- [@Edge : Déploiement du simulateur de robots](https://github.com/fredgis/AIRobot#d%C3%A9ploiement-du-simulateur-des-mesures-du-robot);
+- [@Edge : Configuration du module Azure SQL Edge et Streaming Job](https://github.com/fredgis/AIRobot#configuration-du-module-sql-edge);
+- [@Edge : Déploiement du modèle ONNX dans SQLEdge](https://github.com/fredgis/AIRobot#d%C3%A9ploiement-du-mod%C3%A8le-onnx-dans-sqledge);
+- [@Edge : Ordonnancement des prédictions via Azure Function](https://github.com/fredgis/AIRobot#ordonnancement-des-pr%C3%A9dictions-via-azure-function);
+- [@Cloud : Création du modèle de machine learning de détection d'anomalies](https://github.com/fredgis/AIRobot#mod%C3%A8le-de-machine-learning--deep-learning-pour-la-d%C3%A9tection-danomalie);
+- [@Cloud : Création de l'environnement Blockchain (POA) pour validation des transactions (Quorum)](https://github.com/fredgis/AIRobot#cr%C3%A9ation-de-lenvironnement-blockchain-poa-pour-validation-des-transactions-quorum);
+- [@Cloud : Routage de l'information de transaction validée sur un event grid](https://github.com/fredgis/AIRobot#routage-de-linformation-de-transaction-valid%C3%A9e-sur-un-event-grid);
+- [@Cloud : Création de la CosmosDB et interaction avec Azure Function et Event Grid](https://github.com/fredgis/AIRobot#cr%C3%A9ation-de-la-cosmosdb-et-interaction-avec-azure-function-et-event-grid);
+- [@Cloud : Création de la PowerApps de maintenance](https://github.com/fredgis/AIRobot#cr%C3%A9ation-de-la-powerapps-de-maintenance).
+
 # 1. Architecture introduction
 Imaginez un monde où les robots (dixit robots industriels) effectuaient eux-mêmes un diagnostic de leur état de santé et demanderaient eux-mêmes une intervention de maintenance.
 
