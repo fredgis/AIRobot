@@ -19,61 +19,67 @@ namespace afpredict
 
         static async Task Main(string[] args)
         {
-            try
+            while (true)
             {
-                double errorThreshold;
-
-                if (!double.TryParse(Environment.GetEnvironmentVariable("ComputeModelThreshold"), out errorThreshold))
-                    throw new Exception("ComputeModelThreshold app settings has bad format.");
-
-                var edgeSqlConnectionString = Environment.GetEnvironmentVariable("EdgeSqlConnectionString");
-                Logger.LogInformation($"Connecting to SQL Server {edgeSqlConnectionString}...");
-                using SqlConnection connection = new SqlConnection(edgeSqlConnectionString);
-                await connection.OpenAsync();
-                Logger.LogInformation("Connected.");
-
-                Logger.LogInformation("Loading model pipeline_std.onnx...");
-                var standardizationModel = await GetModelAsync("pipeline_std.onnx", connection);
-
-                Logger.LogInformation("Loading model model_final.onnx...");
-                var computeModel = await GetModelAsync("model_final.onnx", connection);
-
-                if (standardizationModel == null || computeModel == null)
-                    throw new Exception("Required models not found.");
-
-                Logger.LogInformation("All models loaded.");
-
-                Logger.LogInformation("Getting events from database...");
-                var events = await GetEventsAsync(connection);
-                var dataset = ComputeDataset(events);
-                Logger.LogInformation("Done.");
-
-                Logger.LogInformation("Applying standardisation model...");
-                var standardisedDataset = ApplyStandardizationModel(dataset, standardizationModel);
-                Logger.LogInformation("Done.");
-
-                Logger.LogInformation("Applying value compute model...");
-                var computedDataset = ApplyComputeModel(standardisedDataset, computeModel);
-                Logger.LogInformation("Done.");
-
-                Logger.LogInformation("Computing error...");
-                var error = ComputeError(standardisedDataset, computedDataset);
-                Logger.LogInformation($"Done. Error found: {error}.");
-
-                if (error >= errorThreshold)
+                try
                 {
-                    Logger.LogInformation("Error higher than configured threshold. Saving faulty dataset...");
-                    await StoreFaultyDatasetAsync(error, events);
+                    double errorThreshold;
+
+                    if (!double.TryParse(Environment.GetEnvironmentVariable("ComputeModelThreshold"), out errorThreshold))
+                        throw new Exception("ComputeModelThreshold app settings has bad format.");
+
+                    var edgeSqlConnectionString = Environment.GetEnvironmentVariable("EdgeSqlConnectionString");
+                    Logger.LogInformation($"Connecting to SQL Server {edgeSqlConnectionString}...");
+                    using SqlConnection connection = new SqlConnection(edgeSqlConnectionString);
+                    await connection.OpenAsync();
+
+                    Logger.LogInformation("Connected.");
+
+                    Logger.LogInformation("Loading model pipeline_std.onnx...");
+                    var standardizationModel = await GetModelAsync("pipeline_std.onnx", connection);
+
+                    Logger.LogInformation("Loading model model_final.onnx...");
+                    var computeModel = await GetModelAsync("model_final.onnx", connection);
+
+                    if (standardizationModel == null || computeModel == null)
+                        throw new Exception("Required models not found.");
+
+                    Logger.LogInformation("All models loaded.");
+
+                    Logger.LogInformation("Getting events from database...");
+                    var events = await GetEventsAsync(connection);
+                    var dataset = ComputeDataset(events);
+                    Logger.LogInformation("Done.");
+
+                    Logger.LogInformation("Applying standardisation model...");
+                    var standardisedDataset = ApplyStandardizationModel(dataset, standardizationModel);
+                    Logger.LogInformation("Done.");
+
+                    Logger.LogInformation("Applying value compute model...");
+                    var computedDataset = ApplyComputeModel(standardisedDataset, computeModel);
+                    Logger.LogInformation("Done.");
+
+                    Logger.LogInformation("Computing error...");
+                    var error = ComputeError(standardisedDataset, computedDataset);
+                    Logger.LogInformation($"Done. Error found: {error}.");
+
+                    if (error >= errorThreshold)
+                    {
+                        Logger.LogInformation("Error higher than configured threshold. Saving faulty dataset...");
+                        await StoreFaultyDatasetAsync(error, events);
+                        Logger.LogInformation("Done.");
+                    }
+
+                    Logger.LogInformation("Cleaning database...");
+                    await DeleteEventsAsync(events, connection);
                     Logger.LogInformation("Done.");
                 }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex.ToString());
+                }
 
-                Logger.LogInformation("Cleaning database...");
-                await DeleteEventsAsync(events, connection);
-                Logger.LogInformation("Done.");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex.ToString());
+                await Task.Delay(60 * 1000);
             }
         }
 
