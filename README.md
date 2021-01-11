@@ -553,10 +553,193 @@ sudo systemctl status robotsimulator.service
 
 ## Configuration du module SQL Edge
 ### Déploiement de la base de données
+Le module SQL Edge comporte une base de données dans laquelle sera déversé tous les événements envoyés par les robots. Pour rappel, les robots envoient leur données au IoT Hub, qui sont ensuite lus par un STREAM job SQL Edge pour les sauvegarder dans la table `dbo.Events` afin d'être traités par d'autres processus par la suite.
+
+Se connecter à la VM simulant la gateway IoT Edge via le service `Azure Bastion` ou autre méthode de votre choix.
+
+Prendre la main sur le conteneur `SQL Edge`:
+```Shell
+sudo docker exec -it AzureSQLEdge bash
+```
+
+Se connecter à l'instance SQL Edge via `sqlcmd`:
+```Shell
+/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P <SQL_PASSWORD>
+```
+
+Nous allons créer un login `EdgeJob` qui sera utilisé par la suite par le STREAM job pour se connecter à la base et y déverser les événements reçus.
+Nous allons en profiter pour créer la base de données `airobotedgedb` par la même occasion, ainsi que la table `dbo.Events` qui contiendra les données reçues et la table `dbo.Models` qui contiendra les modèles de prédiction ONNX.
+
+```SQL
+USE [master]
+GO
+
+--CREATE EdgeJob LOGIN
+CREATE LOGIN [edgejob] WITH PASSWORD=N'P@ssw0rd123!'
+GO
+
+ALTER LOGIN [edgejob] DISABLE
+GO
+
+--CREATE [airobotedgedb] DATABASE
+CREATE DATABASE [airobotedgedb]
+GO
+
+USE [airobotedgedb]
+GO
+
+CREATE USER [edgejob] FOR LOGIN [edgejob] WITH DEFAULT_SCHEMA=[dbo]
+GO
+
+CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'P@ssw0rd123!';
+
+--CREATE [dbo].[Events] TABLE
+CREATE TABLE [dbo].[Events](
+	[ID] [bigint] IDENTITY(1,1) NOT NULL,
+	[Timestamp] [bigint] NOT NULL,
+	[DrillingTemperature] [decimal](9, 5) NULL,
+	[DrillBitFriction] [decimal](9, 5) NULL,
+	[DrillingSpeed] [decimal](9, 5) NULL,
+	[LiquidCoolingTemperature] [decimal](9, 5) NULL,
+ CONSTRAINT [PK_Events] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+-- CREATE [dbo].[Models] TABLE
+CREATE TABLE Models (
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Data] [varbinary](MAX) NULL,
+	[Description] varchar(1000))
+GO
+```
+
+Une fois la base de données et la table créées, il nous reste plus qu'à créer le STREAM job.
+
 ### Création du Streaming Job
+Un stream job SQL Edge nécessite un source de données en `input` qui sera ici les données du IoT Hub Edge, et une sortie qui sera la table `dbo.Events`.
+
+#### Création de l'input data source
+```SQL
+--Create an external file format of the type JSON.
+CREATE EXTERNAL FILE FORMAT InputFileFormat
+WITH 
+(  
+   format_type = JSON
+)
+GO
+
+--Create an external data source for Azure IoT Edge hub
+CREATE EXTERNAL DATA SOURCE EdgeHubInput 
+WITH 
+(
+    LOCATION = 'edgehub://'
+)
+GO
+
+--Create the external stream object for Azure IoT Edge hub.
+CREATE EXTERNAL STREAM RobotSensors
+WITH 
+(
+    DATA_SOURCE = EdgeHubInput,
+    FILE_FORMAT = InputFileFormat,
+	  LOCATION = N'RobotSensors',
+    INPUT_OPTIONS = N'',
+    OUTPUT_OPTIONS = N''
+);
+GO
+```
+
+>**Notes:** Noter la `LOCATION` de l'external stream `RobotSensors` créé. La valeur renseignée doit être égale à la valeur utilisée pour nomer l'input SQL Edge dans la route configurée dans le module Edge Hub.
+
+>Pour rappel:
+>```JSON
+>"routes": {
+>    "route": "FROM /messages/* INTO $upstream",
+>    "RobotSensorsTopic": "FROM /messages/* INTO >BrokeredEndpoint(\"/modules/AzureSQLEdge/inputs/>RobotSensors\")"
+>}
+>```
+
+#### Création de l'ouput
+```SQL
+--Create the external stream object for local SQL Edge database.
+CREATE DATABASE SCOPED CREDENTIAL SQLCredential
+WITH IDENTITY = 'edgejob', SECRET = 'P@ssw0rd123!'
+GO
+
+CREATE EXTERNAL DATA SOURCE LocalSQLOutput
+WITH 
+(
+    LOCATION = 'sqlserver://tcp:.,1433',
+    CREDENTIAL = SQLCredential
+)
+GO
+
+CREATE EXTERNAL STREAM EventsTableOutput
+WITH 
+(
+    DATA_SOURCE = LocalSQLOutput,
+    LOCATION = N'airobotedgedb.dbo.Events',
+    INPUT_OPTIONS = N'',
+    OUTPUT_OPTIONS = N''
+);
+GO
+```
+
+#### Création du STREAM job SQL Edge
+Une fois l'input et l'ouput définit, le STREAM job peut être créé et démarré.
+
+```SQL
+--Create the streaming job and start it.
+EXEC sys.sp_create_streaming_job @name=N'StreamingJob1',
+	@statement= N'SELECT [Timestamp],
+						 [drillingTemperature] AS [DrillingTemperature],
+						 [drillBitFriction] AS [DrillBitFriction],
+						 [drillingSpeed] AS [DrillingSpeed],
+						 [liquidCoolingTemperature] AS [LiquidCoolingTemperature]
+				  INTO [EventsTableOutput]
+				  FROM [RobotSensors]'
+
+exec sys.sp_start_streaming_job @name=N'StreamingJob1'
+GO
+```
+
+>**Notes:** L'ensemble du script SQL est disponible dans le répertoire [Src/SQLEdge](/Src/SQLEdge) de ce repo.
 
 ### Déploiement du modèle ONNX dans SQLEdge
-https://docs.microsoft.com/fr-fr/azure/azure-sql-edge/deploy-onnx
+
+Si ce n'est pas déjà je cas, se connecter à la VM simulant la gateway IoT Edge via le service `Azure Bastion` ou autre méthode de votre choix.
+
+Prendre la main sur le conteneur `SQL Edge`:
+```Shell
+sudo docker exec -it AzureSQLEdge bash
+```
+
+Télécharger les deux modèles ONNX présents dans ce repo via la méthode de votre choix. Ici, par exemple, nous utilisons l'utilitaire `wget`.
+
+>**Notes:** Le téléchargement d'éléments depuis Internet peut nécessiter l'ouverture de flux adéquats dans le Network Security Group `nsg-vnet-airobot-edge`.
+
+```Shell
+cd /var/opt/mssql
+wget https://raw.githubusercontent.com/fredgis/AIRobot/main/Src/Models/model_final.onnx
+wget https://raw.githubusercontent.com/fredgis/AIRobot/main/Src/Models/pipeline_std.onnx
+```
+
+Une fois téléchargés, il ne reste plus qu'à les insérer dans la table `dbo.Models`.
+
+Se connecter à l'instance SQL Edge via `sqlcmd`:
+```Shell
+/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P <SQL_PASSWORD>
+```
+
+Insérer les modèles:
+```SQL
+INSERT INTO dbo.Models ([Description], [Data]) SELECT N'model_final.onnx', * FROM OPENROWSET(BULK N'/var/opt/mssql/model_final.onnx', SINGLE_BLOB) AS [Model]
+
+INSERT INTO dbo.Models ([Data]) SELECT N'pipeline_std.onnx', * FROM OPENROWSET(BULK N'/var/opt/mssql/pipeline_std.onnx', SINGLE_BLOB) AS [Model]
+```
 
 ## Ordonnancement des prédictions via Azure Function
 ### Création du compute Azure Function

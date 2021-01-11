@@ -35,6 +35,13 @@ CREATE TABLE [dbo].[Events](
 ) ON [PRIMARY]
 GO
 
+-- CREATE [dbo].[Models] TABLE
+CREATE TABLE Models (
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Data] [varbinary](MAX) NULL,
+	[Description] varchar(1000))
+GO
+
 --Create an external file format of the type JSON.
 CREATE EXTERNAL FILE FORMAT InputFileFormat
 WITH 
