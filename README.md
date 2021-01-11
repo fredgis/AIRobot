@@ -304,6 +304,7 @@ Le fichier [EdgeConfiguration.json](/EdgeConfiguration.json) dans ce repo GitHub
 | <STORAGE_ACCOUNT_CONNECTION_STRING> | Chaîne de connection au Storage Account dans Azure, récupéré ci-dessus. |
 
 > **Notes:** <SQL_PASSWORD>, <SA_EDGE_NAME> et <SA_EDGE_KEY> sont des valeurs à générer par vos soins.
+Attention, plusieurs occurences de ces paramètres sont à remplacer dans le fichier.
 
 Une fois le fichier de configuration mis à jour avec vos paramètres, exécuter la commande suivante pour déployer la configuration dans IoT Hub.
 
@@ -741,13 +742,20 @@ INSERT INTO dbo.Models ([Description], [Data]) SELECT N'model_final.onnx', * FRO
 INSERT INTO dbo.Models ([Data]) SELECT N'pipeline_std.onnx', * FROM OPENROWSET(BULK N'/var/opt/mssql/pipeline_std.onnx', SINGLE_BLOB) AS [Model]
 ```
 
-## Ordonnancement des prédictions via Azure Function
-### Création du compute Azure Function
-- Pulling des tables de prédictions
-- Dépôt sur le stockage edge de l'export
-### Configuration du pulling (cron 0 * * * *)
+## Prédictions via Custom Module IoT Edge
+Les modèles de types ONNX déployés dans le module SQL Edge peuvent être exécutés par le mot-clé T-SQL `PREDICT`.
+Néanmoins, dans notre exemple les modèles nécessitent en paramètre un jeu de donnés à deux ou trois dimensions. Le runtime ONNX inclu dans SQL Edge supporte des paramètres à une dimension à la date de rédaction de cet article.
 
+De ce fait, nous appliquons les modèles ONNX grâce à un custom module IoT Edge dont la source est disponible dans le répertoire [Src/ModelsRuntime](/Src/ModelsRuntime).
+Il consiste en un Docker container embarquant un programme .NET Core 3.1, le runtime ONNX et utilise les APIs ONNX pour C#.
 
+Toutes les minutes, l'utilitaire requête la table `dbo.Events` du SQL Edge pour récupérer les 60 événements les plus vieux à traiter, un événement par seconde, puis applique le modèle de standardisation des données et ensuite le modèle de prédiction des données pour enfin calculer l'erreur entre les deux jeux de données obtenus.
+En cas d'erreur supérieur à un seuil, ici 0.9, le score et le jeu de données concerné sont sauvegardés sur le Blob Storage de l'IoT Edge puis répliqué dans le cloud pour de potentiels futurs traitements.
+
+Ce module de prédiction est automatiquement déployé sur la gateway IoT Edge grâce au fichier de configuration utilisé précédemment.
+
+### Liens vers document de références
+- [ONNX Runtime C# API](https://www.onnxruntime.ai/docs/reference/api/csharp-api.html)
 
 # 4. Architecture "Cloud"
 ### Modèle de Machine Learning / Deep Learning pour la détection d'anomalie 
